@@ -1,11 +1,12 @@
 /* ──────────────────────────────────────────────
-   HITSS Tickets — Módulo OCR Simple (Restaurado al Estado Estable Original)
+   HITSS Tickets — Módulo OCR Simple (Restaurado al Estado Estable Original en la Nube)
    ────────────────────────────────────────────── */
 
 let cropperSimple = null;
 
 // Pool de Claves API gratuitas de OCR.Space (rotación automática masiva)
 const API_KEYS_POOL = [
+    'K81133870688957', // Clave Principal Dedicada Personal (25,000 escaneos/mes)
     'K87948218888957',
     'helloworld',
     'K887293818888957',
@@ -92,6 +93,14 @@ function initOCRSimpleListeners() {
 
     const btnScan = document.getElementById('btnExtractTextOCR');
     if (btnScan) btnScan.addEventListener('click', processOCRSimple);
+}
+
+function setMoveModeOCR() {
+    if (cropperSimple) cropperSimple.setDragMode('move');
+}
+
+function setCropModeOCR() {
+    if (cropperSimple) cropperSimple.setDragMode('crop');
 }
 
 function handleFileSelectOCR(e) {
@@ -221,6 +230,7 @@ async function processCloudOCRSimple(croppedCanvas) {
 
     let attempts = 0;
     let lastError = null;
+    currentApiKeyIndex = 0; // Priorizar siempre la clave personal
 
     while (attempts < API_KEYS_POOL.length) {
         const apiKey = getActiveApiKey();
