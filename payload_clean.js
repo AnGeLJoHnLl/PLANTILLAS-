@@ -346,6 +346,19 @@ const RECHAZO_SUBTIPOS = {
 };
 
 // ════════════════════════════════
+//  MOTIVOS CAMBIO DE EQUIPO & CODIGO AUTORIZACION
+// ════════════════════════════════
+const MOTIVOS_CAMBIO_AUTORIZACION = [
+  'EQUIPO CON DAÑO FISICO',
+  'EQUIPO NO REGISTRA',
+  'EQUIPO CON INTERMITENCIA',
+  'EQUIPO NO ENGANCHA',
+  'CAMBIO A DOCSIS 3.0 A 3.1',
+  'SOT DE CAMBIO DE EQUIPO',
+  'SOT DE MANTO GENERADA'
+];
+
+// ════════════════════════════════
 //  GESTIONES ESPECIALES
 // ════════════════════════════════
 const GESTIONES_ESPECIALES = {
@@ -354,7 +367,7 @@ const GESTIONES_ESPECIALES = {
     campos:[
       { key:'equipo_retirar',  label:'EQUIPO A RETIRAR',  type:'text', ph:'Ej. MODEM HFC / ONT FTTH' },
       { key:'modelo',          label:'MODELO',             type:'model_select' },
-      { key:'motivo',          label:'MOTIVO',             type:'text', ph:'Ej. EQUIPO EN MAL ESTADO' },
+      { key:'motivo',          label:'MOTIVO',             type:'motivo_select' },
       { key:'se_autoriza_cod', label:'SE AUTORIZA CÓDIGO', type:'text' },
     ],
   },
@@ -365,7 +378,7 @@ const GESTIONES_ESPECIALES = {
       { key:'modelo_ret',     label:'MODELO A RETIRAR',   type:'model_select' },
       { key:'equipo_activar', label:'EQUIPO POR ACTIVAR', type:'text', ph:'Ej. ONT FTTH / MODEM HFC' },
       { key:'modelo_act',     label:'MODELO POR ACTIVAR', type:'model_select' },
-      { key:'motivo_cambio',  label:'MOTIVO DEL CAMBIO',  type:'text', ph:'Ej. INCOMPATIBILIDAD / DAÑADO' },
+      { key:'motivo_cambio',  label:'MOTIVO DEL CAMBIO',  type:'motivo_select' },
       { key:'cod_aut',        label:'CODIGO DE AUT.',      type:'text' },
       { key:'estado',         label:'ESTADO', type:'select', options:['', 'ATENDIDA', 'ATENDIDA SIN CONFORMIDAD', 'PENDIENTE SE DERIVA A SISTEMAS', 'DENEGADA'] },
     ],
@@ -448,13 +461,19 @@ function updateHeaderProfileDisplay() {
   const name = getStoredUserName();
   const euser = getStoredUserE();
   const hdrEl = g('hdrUserName');
+  const codeEl = g('hdrUserCode');
   if (hdrEl) {
-    if (name && euser) {
-      hdrEl.textContent = `${name} (${euser})`;
-    } else if (name) {
-      hdrEl.textContent = name;
+    if (codeEl) {
+      hdrEl.textContent = name || 'Configurar Asesor';
+      codeEl.textContent = euser ? `(${euser})` : '';
     } else {
-      hdrEl.textContent = 'Configurar Asesor';
+      if (name && euser) {
+        hdrEl.textContent = `${name} (${euser})`;
+      } else if (name) {
+        hdrEl.textContent = name;
+      } else {
+        hdrEl.textContent = 'Configurar Asesor';
+      }
     }
   }
 }
@@ -678,6 +697,41 @@ function inicializar() {
   if (notasEl) {
     notasEl.addEventListener('input', () => guardarFormActual());
   }
+
+  // Sincronizar UI de temas
+  updateThemeMenuUI();
+
+  // Cerrar menú flotante de temas al hacer clic fuera
+  document.addEventListener('click', (e) => {
+    const menu = g('themeDropdownMenu');
+    const btn = g('btnThemeDropdown');
+    if (menu && !menu.classList.contains('hidden')) {
+      if (btn && btn.contains(e.target)) return;
+      if (!menu.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    }
+  });
+}
+
+function toggleThemeMenu(event) {
+  if (event) event.stopPropagation();
+  const menu = g('themeDropdownMenu');
+  if (menu) {
+    menu.classList.toggle('hidden');
+    updateThemeMenuUI();
+  }
+}
+
+function updateThemeMenuUI(themeName) {
+  const currentTheme = themeName || document.documentElement.getAttribute('data-theme') || 'purple';
+  const themes = ['pink', 'purple-light', 'red-light', 'cyan-light', 'purple'];
+  themes.forEach(t => {
+    const badge = g('badge-' + t);
+    if (badge) {
+      badge.style.display = (t === currentTheme) ? 'inline-block' : 'none';
+    }
+  });
 }
 
 function nuevaSeccion() {
@@ -705,7 +759,12 @@ function guardarFormActual() {
   s.numero       = gv('seccionNumero').trim();
   s.tipoGestion  = gv('tipoGestion');
   s.nTicket      = gv('nTicket');
-  s.realizadoPor = gv('realizadoPor');
+  const rPor     = gv('realizadoPor').trim().toUpperCase();
+  s.realizadoPor = rPor;
+  if (rPor) {
+    localStorage.setItem('hitss_username', rPor);
+    updateHeaderProfileDisplay();
+  }
   s.notas        = gv('notasTexto');
 
   if (s.tipoGestion === 'cintillos_ftth') {
@@ -740,6 +799,37 @@ function guardarFormActual() {
 
 function guardarCamposCustom(s) {
   s.camposPersonalizados = s.camposPersonalizados || {};
+
+  if (s.tipoGestion === 'cambio_equipo') {
+    const retItems = [];
+    document.querySelectorAll('#cambioRetirarContainer .cambio-eq-item').forEach(b => {
+      const eqInp = b.querySelector('.input-cambio-eq');
+      const modSel = b.querySelector('.input-cambio-mod');
+      const modMan = b.querySelector('.input-cambio-mod-man');
+      const modelo = (modSel?.value === '__manual__') ? (modMan?.value || '') : (modSel?.value || '');
+      retItems.push({ uid: b.dataset.uid, equipo: eqInp ? eqInp.value : '', modelo });
+    });
+    s.camposPersonalizados.equipos_retirar = retItems;
+    if (retItems.length > 0) {
+      s.camposPersonalizados.equipo_retirar = retItems[0].equipo;
+      s.camposPersonalizados.modelo_ret = retItems[0].modelo;
+    }
+
+    const actItems = [];
+    document.querySelectorAll('#cambioActivarContainer .cambio-eq-item').forEach(b => {
+      const eqInp = b.querySelector('.input-cambio-eq');
+      const modSel = b.querySelector('.input-cambio-mod');
+      const modMan = b.querySelector('.input-cambio-mod-man');
+      const modelo = (modSel?.value === '__manual__') ? (modMan?.value || '') : (modSel?.value || '');
+      actItems.push({ uid: b.dataset.uid, equipo: eqInp ? eqInp.value : '', modelo });
+    });
+    s.camposPersonalizados.equipos_activar = actItems;
+    if (actItems.length > 0) {
+      s.camposPersonalizados.equipo_activar = actItems[0].equipo;
+      s.camposPersonalizados.modelo_act = actItems[0].modelo;
+    }
+  }
+
   document.querySelectorAll('#customFormArea [id^="cesp_"]').forEach(el => {
     if (el.id.endsWith('_manual')) return;
     const key = el.id.replace('cesp_', '');
@@ -893,10 +983,11 @@ function onTipoChange() {
 function renderFormEspecial(tipo, vals) {
   if (tipo === 'cintillos_ftth')        { renderFormCintillosFTTH(vals); return; }
   if (tipo === 'cintillos_hfc')         { renderFormCintillosHFC(vals);  return; }
+  if (tipo === 'cambio_equipo')         { renderFormCambioEquipo(vals);  return; }
   if (esPext(tipo))                     { renderFormDerivacionPext(tipo, vals); return; }
   if (esRechazo(tipo))                  { renderFormRechazo(vals); return; }
 
-  // Genérico (codigo_autorizacion, cambio_equipo, sot_mantto, cambio_plano)
+  // Genérico (codigo_autorizacion, sot_mantto, cambio_plano, etc.)
   const cfg = GESTIONES_ESPECIALES[tipo];
   if (!cfg || !cfg.campos) return;
   const area = g('customFormArea');
@@ -906,6 +997,243 @@ function renderFormEspecial(tipo, vals) {
   area.innerHTML = html;
   area.classList.remove('hidden');
   if (tipo === 'sot_mantto') onManttoMotivoChange();
+}
+
+// ════════════════════════════════
+//  ── CAMBIO DE EQUIPO (MÚLTIPLES EQUIPOS A RETIRAR / ACTIVAR) ──
+// ════════════════════════════════
+function getTodosLosModelos() {
+  return [...new Set([
+    ...MODELOS.hfc,
+    ...MODELOS.ftth,
+    ...MODELOS_DECO.iptv,
+    ...MODELOS_DECO.hfc,
+    ...MODELOS_REPETIDOR
+  ])];
+}
+
+function buildModelosOptionsHtml(selectedModel) {
+  const models = getTodosLosModelos();
+  const isMan = selectedModel !== '' && !models.includes(selectedModel);
+  const selVal = isMan ? '__manual__' : selectedModel;
+  let html = '<option value="">— Selecciona modelo —</option>';
+  models.forEach(m => {
+    html += `<option value="${m}" ${selVal === m ? 'selected' : ''}>${m}</option>`;
+  });
+  html += `<option value="__manual__" ${selVal === '__manual__' ? 'selected' : ''}>✏️ Escribir manualmente…</option>`;
+  return html;
+}
+
+function onCambioModeloChange(sel) {
+  const block = sel.closest('.cambio-eq-item') || sel.closest('.field-group');
+  if (!block) return;
+  const man = block.querySelector('.input-cambio-mod-man');
+  if (!man) return;
+  if (sel.value === '__manual__') {
+    man.classList.remove('hidden');
+    man.focus();
+  } else {
+    man.classList.add('hidden');
+  }
+}
+
+function onMotivoSelectChange(sel, manualId) {
+  const man = g(manualId);
+  if (!man) return;
+  if (sel.value === '__manual__') {
+    man.classList.remove('hidden');
+    man.focus();
+  } else {
+    man.classList.add('hidden');
+  }
+}
+
+function renderFormCambioEquipo(vals) {
+  const area = g('customFormArea');
+  if (!area) return;
+
+  let retItems = vals.equipos_retirar;
+  if (!Array.isArray(retItems) || retItems.length === 0) {
+    retItems = [{
+      uid: 'ret_1',
+      equipo: vals.equipo_retirar || '',
+      modelo: vals.modelo_ret || ''
+    }];
+  }
+
+  let actItems = vals.equipos_activar;
+  if (!Array.isArray(actItems) || actItems.length === 0) {
+    actItems = [{
+      uid: 'act_1',
+      equipo: vals.equipo_activar || '',
+      modelo: vals.modelo_act || ''
+    }];
+  }
+
+  const motivoVal = vals.motivo_cambio || '';
+  const isManMot = motivoVal !== '' && !MOTIVOS_CAMBIO_AUTORIZACION.includes(motivoVal);
+  const selMot = isManMot ? '__manual__' : motivoVal;
+  const manMot = isManMot ? motivoVal : '';
+
+  const estadoVal = vals.estado || '';
+  const codAutVal = vals.cod_aut || '';
+
+  const estados = ['', 'ATENDIDA', 'ATENDIDA SIN CONFORMIDAD', 'PENDIENTE SE DERIVA A SISTEMAS', 'DENEGADA'];
+
+  let html = `
+    <div class="custom-form-area cambio-equipo-area">
+      <!-- SECCION: EQUIPOS A RETIRAR -->
+      <div class="cambio-section-header">
+        <span class="cambio-sec-title">📦 EQUIPOS A RETIRAR</span>
+      </div>
+      <div id="cambioRetirarContainer" class="cambio-items-container"></div>
+      <div class="add-btns" style="margin-top:0.4rem; margin-bottom:1.1rem;">
+        <div class="add-btns-row">
+          <button type="button" class="btn-add" onclick="addCambioEquipoRetirar()">+ Agregar equipo a retirar</button>
+        </div>
+      </div>
+
+      <!-- SECCION: EQUIPOS POR ACTIVAR -->
+      <div class="cambio-section-header">
+        <span class="cambio-sec-title">⚡ EQUIPOS POR ACTIVAR</span>
+      </div>
+      <div id="cambioActivarContainer" class="cambio-items-container"></div>
+      <div class="add-btns" style="margin-top:0.4rem; margin-bottom:1.1rem;">
+        <div class="add-btns-row">
+          <button type="button" class="btn-add" onclick="addCambioEquipoActivar()">+ Agregar equipo por activar</button>
+        </div>
+      </div>
+
+      <!-- SECCION: MOTIVO, CODIGO Y ESTADO -->
+      <div class="field-group">
+        <label class="field-label">MOTIVO DEL CAMBIO</label>
+        <div class="sel-wrap">
+          <select id="cesp_motivo_cambio" onchange="onMotivoSelectChange(this, 'cesp_motivo_cambio_manual')">
+            <option value="">— Selecciona motivo —</option>
+            ${MOTIVOS_CAMBIO_AUTORIZACION.map(m => `<option value="${m}" ${selMot===m?'selected':''}>${m}</option>`).join('')}
+            <option value="__manual__" ${selMot==='__manual__'?'selected':''}>✏️ Otro / Agregar motivo manualmente…</option>
+          </select>
+          <span class="sel-arrow">▾</span>
+        </div>
+        <input type="text" id="cesp_motivo_cambio_manual" class="input-mod-manual ${isManMot ? '' : 'hidden'}"
+               value="${manMot}" placeholder="Escribe el motivo del cambio…" style="margin-top:0.4rem" />
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">CODIGO DE AUT.</label>
+        <input type="text" id="cesp_cod_aut" value="${codAutVal}" placeholder="Ej. COD-12345" />
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">ESTADO</label>
+        <div class="sel-wrap">
+          <select id="cesp_estado">
+            ${estados.map(e => `<option value="${e}" ${estadoVal===e?'selected':''}>${e || '— Selecciona estado —'}</option>`).join('')}
+          </select>
+          <span class="sel-arrow">▾</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  area.innerHTML = html;
+  area.classList.remove('hidden');
+
+  retItems.forEach((item, i) => renderCambioItemDOM('retirar', item.uid || `ret_${Date.now()}_${i}`, item.equipo, item.modelo));
+  actItems.forEach((item, i) => renderCambioItemDOM('activar', item.uid || `act_${Date.now()}_${i}`, item.equipo, item.modelo));
+}
+
+function renderCambioItemDOM(tipo, uid, equipo = '', modelo = '') {
+  const isRet = tipo === 'retirar';
+  const container = g(isRet ? 'cambioRetirarContainer' : 'cambioActivarContainer');
+  if (!container) return;
+
+  const count = container.querySelectorAll('.cambio-eq-item').length + 1;
+  const title = isRet ? `EQUIPO A RETIRAR #${count}` : `EQUIPO POR ACTIVAR #${count}`;
+  const ph = isRet ? 'Ej. MODEM HFC / ONT FTTH' : 'Ej. ONT FTTH / MODEM HFC';
+  const color = isRet ? 'var(--danger)' : 'var(--accent)';
+
+  const models = getTodosLosModelos();
+  const isMan = modelo !== '' && !models.includes(modelo);
+  const selVal = isMan ? '__manual__' : modelo;
+  const manVal = isMan ? modelo : '';
+
+  const optsHtml = buildModelosOptionsHtml(selVal);
+
+  const div = document.createElement('div');
+  div.className = `cambio-eq-item eq-block ${isRet ? 'cambio-ret-item' : 'cambio-act-item'}`;
+  div.dataset.uid = uid;
+  div.dataset.tipo = tipo;
+  div.innerHTML = `
+    <div class="block-row">
+      <span class="blk-label" style="color:${color}">${isRet ? '📦' : '⚡'} ${title}</span>
+      <button type="button" class="btn-remove" onclick="removeCambioItem('${tipo}', '${uid}')">✕ Quitar</button>
+    </div>
+    <div class="field-group inner">
+      <label class="field-label">${isRet ? 'Equipo a Retirar' : 'Equipo por Activar'}</label>
+      <input type="text" class="input-cambio-eq input-eq" value="${equipo}" placeholder="${ph}" />
+    </div>
+    <div class="field-group inner">
+      <label class="field-label">${isRet ? 'Modelo a Retirar' : 'Modelo por Activar'}</label>
+      <div class="sel-wrap">
+        <select class="input-cambio-mod input-mod" onchange="onCambioModeloChange(this)">${optsHtml}</select>
+        <span class="sel-arrow">▾</span>
+      </div>
+      <input type="text" class="input-cambio-mod-man input-mod-manual ${isMan ? '' : 'hidden'}"
+             value="${manVal}" placeholder="Escribe el modelo…" style="margin-top:0.4rem" />
+    </div>
+  `;
+
+  container.appendChild(div);
+  updateCambioItemLabels(tipo);
+}
+
+function updateCambioItemLabels(tipo) {
+  const isRet = tipo === 'retirar';
+  const container = g(isRet ? 'cambioRetirarContainer' : 'cambioActivarContainer');
+  if (!container) return;
+  const items = container.querySelectorAll('.cambio-eq-item');
+  items.forEach((item, idx) => {
+    const lbl = item.querySelector('.blk-label');
+    const title = isRet ? `EQUIPO A RETIRAR #${idx + 1}` : `EQUIPO POR ACTIVAR #${idx + 1}`;
+    if (lbl) lbl.innerHTML = `${isRet ? '📦' : '⚡'} ${title}`;
+    const btnRem = item.querySelector('.btn-remove');
+    if (btnRem) {
+      if (items.length === 1) btnRem.classList.add('hidden');
+      else btnRem.classList.remove('hidden');
+    }
+  });
+}
+
+function addCambioEquipoRetirar() {
+  const uid = `ret_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+  renderCambioItemDOM('retirar', uid, '', '');
+  guardarFormActual();
+}
+
+function addCambioEquipoActivar() {
+  const uid = `act_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+  renderCambioItemDOM('activar', uid, '', '');
+  guardarFormActual();
+}
+
+function removeCambioItem(tipo, uid) {
+  const isRet = tipo === 'retirar';
+  const container = g(isRet ? 'cambioRetirarContainer' : 'cambioActivarContainer');
+  if (!container) return;
+  const items = container.querySelectorAll('.cambio-eq-item');
+  if (items.length <= 1) return;
+
+  const el = container.querySelector(`[data-uid="${uid}"]`);
+  if (el) {
+    el.style.transition = 'opacity 0.15s';
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.remove();
+      updateCambioItemLabels(tipo);
+      guardarFormActual();
+    }, 160);
+  }
 }
 
 // ════════════════════════════════
@@ -1009,7 +1337,12 @@ function guardarCintillosFTTH(s) {
 
 function generarTextoCintillosFTTH(s) {
   const vals = s.camposPersonalizados || {};
-  const L = ['MESA MULTISKILL HITSS - CONSULTA DE CINTILLOS FTTH', `N. TICKET: ${s.nTicket||'—'}`, `PLANO: ${vals.plano||'—'}`];
+  const L = ['MESA MULTISKILL HITSS - CONSULTA DE CINTILLOS FTTH'];
+  const ticketVal = (s.nTicket || '').trim();
+  if (ticketVal !== '' && ticketVal !== '—' && ticketVal !== '-') {
+    L.push(`N. TICKET: ${ticketVal}`);
+  }
+  L.push(`PLANO: ${vals.plano||'—'}`);
   (vals.fat_items||[]).forEach(item => {
     const num = item.numero||'?';
     if (item.status === 'saturado') L.push(`FAT #${num} SATURADO`);
@@ -1114,7 +1447,12 @@ function guardarCintillosHFC(s) {
 
 function generarTextoCintillosHFC(s) {
   const vals = s.camposPersonalizados || {};
-  const L = ['MESA MULTISKILL HITSS - CONSULTA DE CINTILLOS HFC', `N. TICKET: ${s.nTicket||'—'}`, `PLANO: ${vals.plano||'—'}`];
+  const L = ['MESA MULTISKILL HITSS - CONSULTA DE CINTILLOS HFC'];
+  const ticketVal = (s.nTicket || '').trim();
+  if (ticketVal !== '' && ticketVal !== '—' && ticketVal !== '-') {
+    L.push(`N. TICKET: ${ticketVal}`);
+  }
+  L.push(`PLANO: ${vals.plano||'—'}`);
   (vals.tap_items||[]).forEach(item => {
     const t = item.tap||'?'; const b = item.borne||'?';
     if (item.status === 'saturado') L.push(`TAP #${t}X${b} SATURADO`);
@@ -1288,6 +1626,30 @@ function renderSubtipoCampos(campos, vals) {
       const onchAttr = c.onchange ? `onchange="${c.onchange}"` : '';
       const opts = c.options.map(o => `<option value="${o}" ${currVal===o?'selected':''}>${o||'— Selecciona —'}</option>`).join('');
       html += `<div class="field-group ${hiddenCls}" ${groupAttr}><label class="field-label">${c.label}</label><div class="sel-wrap"><select id="cesp_${c.key}" ${onchAttr}>${opts}</select><span class="sel-arrow">▾</span></div></div>`;
+    } else if (c.type === 'motivo_select') {
+      const currVal = (c.key in vals) ? vals[c.key] : '';
+      const isMan = currVal !== '' && !MOTIVOS_CAMBIO_AUTORIZACION.includes(currVal);
+      const selVal = isMan ? '__manual__' : currVal;
+      const manVal = isMan ? currVal : '';
+
+      let optsHtml = `<option value="">— Selecciona motivo —</option>`;
+      MOTIVOS_CAMBIO_AUTORIZACION.forEach(m => {
+        optsHtml += `<option value="${m}" ${selVal===m?'selected':''}>${m}</option>`;
+      });
+      optsHtml += `<option value="__manual__" ${selVal==='__manual__'?'selected':''}>✏️ Otro / Agregar motivo manualmente…</option>`;
+
+      html += `
+        <div class="field-group ${hiddenCls}" ${groupAttr}>
+          <label class="field-label">${c.label}</label>
+          <div class="sel-wrap">
+            <select id="cesp_${c.key}" onchange="onMotivoSelectChange(this, 'cesp_${c.key}_manual')">
+              ${optsHtml}
+            </select>
+            <span class="sel-arrow">▾</span>
+          </div>
+          <input type="text" id="cesp_${c.key}_manual" class="input-mod-manual ${isMan ? '' : 'hidden'}"
+                 value="${manVal}" placeholder="Escribe el motivo…" style="margin-top:0.4rem" />
+        </div>`;
     } else if (c.type === 'model_select') {
       const currVal = (c.key in vals) ? vals[c.key] : '';
       const knownAll = [
@@ -1376,7 +1738,7 @@ function aplicarVisibilidad(tipo) {
 function actualizarBadge(tipo) {
   const badge = g('seccionTipoBadge');
   badge.className = 'sec-tipo-badge';
-  if (!tipo) { badge.textContent = 'Sin gestión'; return; }
+  if (!tipo) { badge.textContent = 'SIN GESTIÓN'; return; }
   const titulo = esEspecial(tipo) ? GESTIONES_ESPECIALES[tipo].titulo : GESTIONES[tipo]?.titulo;
   badge.textContent = titulo || tipo;
   badge.classList.add(`badge-${tipo}`);
@@ -1450,6 +1812,17 @@ function onModeloChange() {
   }
 }
 
+function onEstadoChange() {
+  const man = g('estadoManual');
+  if (!man) return;
+  if (gv('estado') === '__manual__') {
+    man.classList.remove('hidden');
+    man.focus();
+  } else {
+    man.classList.add('hidden');
+  }
+}
+
 function resetTechBtns() {
   document.querySelectorAll('.tech-btn').forEach(b => b.classList.remove('active','hfc','ftth'));
 }
@@ -1461,7 +1834,23 @@ function agregarEquipoAdicional(tipo) {
   eqCounter++;
   const uid = `eq_${Date.now()}_${eqCounter}`;
   renderEqAdicional(tipo, uid, '', '');
-  if (secciones.length > 0) secciones[seccionActiva].equiposAdicionales.push({uid,tipo,equipo:'',modelo:''});
+  if (secciones.length > 0) {
+    const arr = secciones[seccionActiva].equiposAdicionales;
+    const newItem = { uid, tipo, equipo: '', modelo: '' };
+    if (tipo === 'deco') {
+      let lastDecoIndex = -1;
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].tipo === 'deco') lastDecoIndex = i;
+      }
+      if (lastDecoIndex >= 0) {
+        arr.splice(lastDecoIndex + 1, 0, newItem);
+      } else {
+        arr.unshift(newItem);
+      }
+    } else {
+      arr.push(newItem);
+    }
+  }
 }
 
 function getCurrentTech() {
@@ -1538,7 +1927,25 @@ function renderEqAdicional(tipo, uid, equipo, modelo) {
       <input type="text" class="input-mod-manual ${isManual ? '' : 'hidden'}"
              value="${manVal}" placeholder="Escribe el modelo…" style="margin-top:0.4rem"/>
     </div>`;
-  g('equiposAdicionales').appendChild(div);
+
+  const container = g('equiposAdicionales');
+  if (tipo === 'deco') {
+    // Si agregamos un deco, debe ordenarse después del último deco existente, antes de cualquier repetidor
+    const decoBlocks = container.querySelectorAll('.eq-block-adicional[data-tipo="deco"]');
+    if (decoBlocks.length > 0) {
+      const lastDeco = decoBlocks[decoBlocks.length - 1];
+      lastDeco.after(div);
+    } else {
+      if (container.firstChild) {
+        container.insertBefore(div, container.firstChild);
+      } else {
+        container.appendChild(div);
+      }
+    }
+  } else {
+    // Repetidores siempre van al final
+    container.appendChild(div);
+  }
 }
 
 function quitarEqAdicional(uid) {
@@ -1573,11 +1980,11 @@ function generarTextoEstandar(s) {
   L.push(`MESA MULTISKILL HITSS – ${cfg.titulo}`);
   
   const ticketVal = (s.nTicket || '').trim();
-  if (ticketVal !== '') {
+  if (ticketVal !== '' && ticketVal !== '—' && ticketVal !== '-') {
     L.push(`N. TICKET: ${ticketVal}`);
   }
 
-  // Omit EQUIPO ACTIVADO and MODELO if empty
+  // 1. EMTA o ONT primero (equipo principal)
   const eqName = (s.equipoActivado || '').trim();
   const eqMod  = (s.modeloEquipo || '').trim();
   if (cfg.mostrarEquipo && (eqName !== '' || eqMod !== '')) {
@@ -1585,7 +1992,18 @@ function generarTextoEstandar(s) {
     L.push(`MODELO: ${eqMod || '—'}`);
   }
 
-  // Omit REPETIDOR ACTIVADO and MODELO if empty
+  // 2. Luego el deco o la cantidad de decos que haya
+  const decos = (s.equiposAdicionales || []).filter(eq => eq.tipo === 'deco');
+  decos.forEach(eq => {
+    const eName = (eq.equipo || '').trim();
+    const eMod  = (eq.modelo || '').trim();
+    if (eName !== '' || eMod !== '') {
+      L.push(`DECO ACTIVADO: ${eName || '—'}`);
+      L.push(`MODELO: ${eMod || '—'}`);
+    }
+  });
+
+  // 3. Por último el repetidor / repetidores
   const repName = (s.repetidorActivado || '').trim();
   const repMod  = (s.modeloRepetidor || '').trim();
   if (cfg.mostrarMesh && (repName !== '' || repMod !== '')) {
@@ -1593,12 +2011,12 @@ function generarTextoEstandar(s) {
     L.push(`MODELO: ${repMod || '—'}`);
   }
 
-  // Equipos adicionales (decos / repetidores)
-  (s.equiposAdicionales || []).forEach(eq => {
+  const repetidores = (s.equiposAdicionales || []).filter(eq => eq.tipo === 'repetidor');
+  repetidores.forEach(eq => {
     const eName = (eq.equipo || '').trim();
     const eMod  = (eq.modelo || '').trim();
     if (eName !== '' || eMod !== '') {
-      L.push(`${eq.tipo==='deco'?'DECO ACTIVADO':'REPETIDOR ACTIVADO'}: ${eName || '—'}`);
+      L.push(`REPETIDOR ACTIVADO: ${eName || '—'}`);
       L.push(`MODELO: ${eMod || '—'}`);
     }
   });
@@ -1625,7 +2043,7 @@ function generarTextoEspecial(s) {
   if (s.tipoGestion === 'activacion_plume') {
     L.push('MESA MULTISKILL HITSS – ACTIVACION PLUME');
     const ticketVal = (s.nTicket || '').trim();
-    if (ticketVal !== '') {
+    if (ticketVal !== '' && ticketVal !== '—' && ticketVal !== '-') {
       L.push(`N. TICKET: ${ticketVal}`);
     }
     L.push(`MAC: ${vals.mac || ''}`);
@@ -1638,9 +2056,50 @@ function generarTextoEspecial(s) {
     return L.join('\n');
   }
 
+  // Plantilla personalizada para CAMBIO DE EQUIPO
+  if (s.tipoGestion === 'cambio_equipo') {
+    L.push('MESA MULTISKILL HITSS - CAMBIO DE EQUIPO');
+    const ticketVal = (s.nTicket || '').trim();
+    if (ticketVal !== '' && ticketVal !== '—' && ticketVal !== '-') {
+      L.push(`N. TICKET: ${ticketVal}`);
+    }
+
+    const retList = vals.equipos_retirar || (vals.equipo_retirar ? [{ equipo: vals.equipo_retirar, modelo: vals.modelo_ret || '' }] : []);
+    if (retList.length === 0) retList.push({ equipo: '', modelo: '' });
+
+    retList.forEach(item => {
+      const eq = (item.equipo || '').trim();
+      const mod = (item.modelo || '').trim();
+      L.push(`EQUIPO A RETIRAR: ${eq || '—'}`);
+      L.push(`MODELO A RETIRAR: ${mod || '—'}`);
+    });
+
+    const actList = vals.equipos_activar || (vals.equipo_activar ? [{ equipo: vals.equipo_activar, modelo: vals.modelo_act || '' }] : []);
+    if (actList.length === 0) actList.push({ equipo: '', modelo: '' });
+
+    actList.forEach(item => {
+      const eq = (item.equipo || '').trim();
+      const mod = (item.modelo || '').trim();
+      L.push(`EQUIPO POR ACTIVAR: ${eq || '—'}`);
+      L.push(`MODELO POR ACTIVAR: ${mod || '—'}`);
+    });
+
+    const mot = (vals.motivo_cambio || '').trim();
+    L.push(`MOTIVO DEL CAMBIO: ${mot || '—'}`);
+
+    const cod = (vals.cod_aut || '').trim();
+    L.push(`CODIGO DE AUT.: ${cod || '—'}`);
+
+    const est = (vals.estado || '').trim();
+    L.push(`ESTADO: ${est || '—'}`);
+
+    L.push(`REALIZADO POR: ${s.realizadoPor?.trim() || 'ANGEL LLAMACPONCCA'}`);
+    return L.join('\n');
+  }
+
   L.push(cfg.header);
   const ticketVal = (s.nTicket || '').trim();
-  if (ticketVal !== '') {
+  if (ticketVal !== '' && ticketVal !== '—' && ticketVal !== '-') {
     L.push(`N. TICKET: ${ticketVal}`);
   }
 
@@ -1658,36 +2117,44 @@ function generarTextoEspecial(s) {
 // ════════════════════════════════
 //  SIDEBAR
 // ════════════════════════════════
-// ════════════════════════════════
-//  SIDEBAR
-// ════════════════════════════════
 function renderSidebar() {
-  const list = g('sectionsList'); list.innerHTML='';
+  const list = g('sectionsList');
+  if (!list) return;
+  list.innerHTML = '';
   secciones.forEach((sec, idx) => {
-    const isActive = idx===seccionActiva;
+    const isActive = idx === seccionActiva;
     const tipo = sec.tipoGestion;
-    const badgeCls = tipo ? `badge-${tipo}` : 'badge-none';
-    const tipoLabel = tipo ? (esEspecial(tipo)?GESTIONES_ESPECIALES[tipo].titulo:GESTIONES[tipo]?.titulo) : 'Sin gestión';
-    const ticketLbl = sec.nTicket ? `Ticket: ${sec.nTicket}` : 'Sin ticket';
-    const hasPlant  = !!sec.plantillaGenerada;
-    const item = document.createElement('div');
-    item.className = `section-item${isActive?' active':''}`;
-    item.style.setProperty('--i', idx); // usado por CSS para escalonar la animación de entrada
+    const tipoLabel = tipo ? (esEspecial(tipo) ? GESTIONES_ESPECIALES[tipo].titulo : (GESTIONES[tipo]?.titulo || tipo)) : 'SIN GESTIÓN';
+    const isAtendida = sec.estado && sec.estado.toUpperCase().includes('ATENDIDA');
+    const dotEmoji = isAtendida ? '🟢' : '🔴';
+    const estadoText = (sec.estado && sec.estado.trim()) ? sec.estado.trim().toUpperCase() : 'SIN GESTIÓN';
+    const hasPlant = !!sec.plantillaGenerada;
     const sotVal = (sec.numero !== undefined && sec.numero !== null && String(sec.numero).trim() !== '') ? sec.numero : '—';
+    
+    const item = document.createElement('div');
+    item.className = `section-item sot-card-item${isActive ? ' active' : ''}`;
+    item.style.setProperty('--i', idx);
+    item.onclick = () => cambiarSeccion(idx);
+    
     item.innerHTML = `
-      <div class="section-item-inner" onclick="cambiarSeccion(${idx})">
-        <div class="sec-card-top">
-          <span class="sec-sot-title">SOT: ${sotVal}</span>
-          ${hasPlant?'<span class="plantilla-dot">●</span>':''}
-          <button class="btn-delete-item" onclick="confirmarEliminar(${idx},event)" title="Eliminar">✕</button>
+      <div class="sot-card-icon-wrap">
+        <span class="sot-card-icon">🏷️</span>
+      </div>
+      <div class="sot-card-body">
+        <div class="sot-card-top-row">
+          <span class="sot-card-title">SOT: ${sotVal}</span>
+          ${hasPlant ? '<span class="plantilla-dot" title="Plantilla generada">●</span>' : ''}
+          <button type="button" class="sot-card-close" onclick="confirmarEliminar(${idx}, event)" title="Eliminar SOT">✕</button>
         </div>
-        <div class="sec-card-mid">
-          <span class="si-gestion-badge ${badgeCls}">${tipoLabel}</span>
+        <div class="sot-card-status-row">
+          <span class="sot-status-dot">${dotEmoji}</span>
+          <span class="sot-status-text">${estadoText}</span>
         </div>
-        <div class="sec-card-bot">
-          <span class="section-item-ticket">${ticketLbl}</span>
+        <div class="sot-card-bottom-row">
+          <span class="sot-sub-text">${tipoLabel}</span>
         </div>
-      </div>`;
+      </div>
+    `;
     list.appendChild(item);
   });
 }
@@ -1738,6 +2205,7 @@ function actualizarNumero(val) {
   if (secciones.length === 0) return;
   secciones[seccionActiva].numero = (val || '').trim();
   renderSidebar();
+  guardarSeccionesStorage();
 }
 
 // ════════════════════════════════
@@ -1916,7 +2384,11 @@ async function copiarAlPortapapeles(texto) {
   catch { const ta=document.createElement('textarea'); ta.value=texto; ta.style.cssText='position:fixed;opacity:0;'; document.body.appendChild(ta); ta.focus(); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
 }
 
-document.addEventListener('DOMContentLoaded', inicializar);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', inicializar);
+} else {
+  inicializar();
+}
 
 // ════════════════════════════════
 //  BLOC DE CUENTAS & CONTRASEÑAS (8 SLOTS)
@@ -1983,6 +2455,7 @@ function initCodeGenerator() {
 function guardarCodeEUser() {
   const val = gv('codeEUser').trim().toUpperCase();
   localStorage.setItem('hitss_euser', val);
+  updateHeaderProfileDisplay();
 }
 
 function dateNowFormatted() {
@@ -2102,15 +2575,19 @@ function autoLimpiarYDetectarSerial(el, isRepeater = false, targetModelSelectId 
     }
 
     if (sel) {
-      const lower = corregido.toLowerCase();
-      if (lower.startsWith('zte')) {
-        sel.value = 'REPETIDOR ZXHN H3601P 180000528400 ZTE';
-        if (typeof onModeloRepetidorChange === 'function') onModeloRepetidorChange();
-        if (typeof onAdicionalModeloChange === 'function') onAdicionalModeloChange(sel);
-      } else if (/^\d+$/.test(corregido) && corregido.length > 0) {
+      const upper = corregido.toUpperCase();
+      if (upper.startsWith('48575443')) {
         sel.value = 'ROUTER K562E-10 50087708 HUAWEI';
         if (typeof onModeloRepetidorChange === 'function') onModeloRepetidorChange();
         if (typeof onAdicionalModeloChange === 'function') onAdicionalModeloChange(sel);
+        guardarFormActual();
+        mostrarAvisoSerial('✨ Repetidor HUAWEI seleccionado automáticamente');
+      } else if (upper.startsWith('ZTE')) {
+        sel.value = 'REPETIDOR ZXHN H3601P 180000528400 ZTE';
+        if (typeof onModeloRepetidorChange === 'function') onModeloRepetidorChange();
+        if (typeof onAdicionalModeloChange === 'function') onAdicionalModeloChange(sel);
+        guardarFormActual();
+        mostrarAvisoSerial('✨ Repetidor ZTE seleccionado automáticamente');
       }
     }
   }
@@ -2146,15 +2623,26 @@ function isEquipmentInput(el) {
   const id = el.id || '';
   const cls = el.className || '';
 
-  // Excluir explícitamente nombres de personas, correos, notas y campos que no son equipos
-  if (['profNombre', 'profUserE', 'realizadoPor', 'codeEUser', 'seccionNumero', 'search', 'notasTexto', 'observaciones'].includes(id)) {
-    return false;
-  }
-  if (id.includes('tecnico') || id.includes('nombres') || id.includes('direccion') || id.includes('contacto') || id.includes('correo') || id.includes('plano') || id.includes('coord')) {
+  // 1. REGLA ESTRICTA: SI ES UN CAMPO DE MODELO, NUNCA ES UN SERIAL.
+  // Debe permitir espacios, número '0', letras 'o'/'O' y cualquier carácter sin alteración.
+  if (
+    id.toLowerCase().includes('modelo') ||
+    id.toLowerCase().includes('model') ||
+    id.endsWith('_manual') ||
+    cls.includes('input-mod')
+  ) {
     return false;
   }
 
-  // Verificar si es un campo de equipo (equipo activado, reenvío de señal, repetidor activado, equipo a retirar, equipo por activar, etc.)
+  // 2. Excluir explícitamente nombres, correos, notas, tickets y campos generales
+  if (['profNombre', 'profUserE', 'realizadoPor', 'codeEUser', 'seccionNumero', 'search', 'notasTexto', 'observaciones', 'nTicket'].includes(id)) {
+    return false;
+  }
+  if (id.includes('tecnico') || id.includes('nombres') || id.includes('direccion') || id.includes('contacto') || id.includes('correo') || id.includes('plano') || id.includes('coord') || id.includes('motivo') || id.includes('estado') || id.includes('contrata')) {
+    return false;
+  }
+
+  // 3. Incluir ÚNICAMENTE los inputs donde se ingresan números de serie o MACs
   if (
     id === 'equipoActivado' ||
     id === 'repetidorActivado' ||
@@ -2166,8 +2654,7 @@ function isEquipmentInput(el) {
     id === 'cesp_sn' ||
     id === 'cesp_serie_repetidor' ||
     cls.includes('input-eq') ||
-    cls.includes('mac-input') ||
-    (el.closest && (el.closest('#bloqueEquipoPrincipal') || el.closest('#bloqueRepetidor') || el.closest('#equiposAdicionales') || el.closest('.eq-block-adicional')))
+    cls.includes('mac-input')
   ) {
     return true;
   }

@@ -6,12 +6,28 @@
   <title>Generador de plantillas</title>
   <meta name="description" content="Generador de plantillas de tickets HITSS Mesa Multiskill." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="styles.css" />
   <!-- FontAwesome & Cropper.js for OCR -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('hitss_theme') || 'purple';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+    function setAppTheme(themeName) {
+      document.documentElement.setAttribute('data-theme', themeName);
+      localStorage.setItem('hitss_theme', themeName);
+      if (typeof updateThemeMenuUI === 'function') {
+        updateThemeMenuUI(themeName);
+      }
+      const menu = document.getElementById('themeDropdownMenu');
+      if (menu) menu.classList.add('hidden');
+    }
+  </script>
 </head>
 <body>
 
@@ -51,13 +67,20 @@
             <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 8 9"/>
           </svg>
         </div>
-        <div class="app-title">Generador de plantillas</div>
+        <div class="app-title">GENERADOR DE PLANTILLAS</div>
       </div>
-      <div style="display:flex; align-items:center; gap:0.5rem;">
-        <div class="header-badge">Mesa Multiskill HITSS</div>
-        <button type="button" id="btnHeaderProfile" onclick="openUserProfileModal()" style="padding:4px 10px; font-size:0.75rem; font-weight:700; color:#38bdf8; border:1px solid rgba(56,189,248,0.3); background:rgba(56,189,248,0.1); border-radius:6px; cursor:pointer;" title="Configurar Usuario E y Nombre Completo">
-          👤 <span id="hdrUserName">Configurar Asesor</span>
-        </button>
+      <div class="header-right-tools">
+        <!-- User Profile Pill -->
+        <div class="user-profile-pill" onclick="openUserProfileModal()" title="Configurar Asesor">
+          <div class="user-avatar-circle">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div class="user-info-text">
+            <span class="user-name" id="hdrUserName">Configurar Asesor</span>
+            <span class="user-code" id="hdrUserCode"></span>
+          </div>
+          <span class="user-chevron">▾</span>
+        </div>
       </div>
     </div>
   </header>
@@ -128,6 +151,49 @@
       <a href="https://host.globalhitss.com/" target="_blank" rel="noopener noreferrer" class="ql-btn ql-link" title="Abrir HOST">
         <span class="ql-num">HOST</span>
       </a>
+
+      <a href="http://intranetces.tim.com.pe/" target="_blank" rel="noopener noreferrer" class="ql-btn ql-link" title="Abrir CES">
+        <span class="ql-num">CES</span>
+      </a>
+    </div>
+
+    <!-- Selector de Temas Flotante Elegante -->
+    <div class="theme-dropdown-wrap">
+      <button type="button" class="btn-theme-dropdown" id="btnThemeDropdown" onclick="toggleThemeMenu(event)" title="Cambiar tema de color">
+        <span class="theme-btn-icon">🎨</span>
+        <span class="theme-btn-text">Tema</span>
+        <span class="theme-caret">▾</span>
+      </button>
+      <div id="themeDropdownMenu" class="theme-dropdown-menu hidden">
+        <div class="theme-menu-title">TEMAS DE INTERFAZ</div>
+        <div class="theme-options-list">
+          <button type="button" class="theme-opt-btn" onclick="setAppTheme('pink')">
+            <span class="theme-swatch swatch-pink"></span>
+            <span class="theme-opt-name">Rosa Personalizado</span>
+            <span class="theme-active-tag" id="badge-pink">Activo</span>
+          </button>
+          <button type="button" class="theme-opt-btn" onclick="setAppTheme('purple-light')">
+            <span class="theme-swatch swatch-purple-light"></span>
+            <span class="theme-opt-name">Morado</span>
+            <span class="theme-active-tag" id="badge-purple-light">Activo</span>
+          </button>
+          <button type="button" class="theme-opt-btn" onclick="setAppTheme('red-light')">
+            <span class="theme-swatch swatch-red-light"></span>
+            <span class="theme-opt-name">Rojo</span>
+            <span class="theme-active-tag" id="badge-red-light">Activo</span>
+          </button>
+          <button type="button" class="theme-opt-btn" onclick="setAppTheme('cyan-light')">
+            <span class="theme-swatch swatch-cyan-light"></span>
+            <span class="theme-opt-name">Cian</span>
+            <span class="theme-active-tag" id="badge-cyan-light">Activo</span>
+          </button>
+          <button type="button" class="theme-opt-btn" onclick="setAppTheme('purple')">
+            <span class="theme-swatch swatch-purple"></span>
+            <span class="theme-opt-name">Púrpura (Original)</span>
+            <span class="theme-active-tag" id="badge-purple">Activo</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <span class="ql-feedback hidden" id="qlFeedback">Copiado</span>
@@ -139,15 +205,13 @@
     <!-- ── SIDEBAR ── -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
-        <span class="sidebar-title">Secciones</span>
-        <button class="btn-nueva-sec" onclick="nuevaSeccion()" title="Nueva sección">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Nueva
-        </button>
+        <span class="sidebar-title">SECCIONES</span>
+        <button class="btn-nueva-sot-top" onclick="nuevaSeccion()" title="Nueva SOT">+ Nueva SOT</button>
       </div>
       <div id="sectionsList" class="sections-list"></div>
+      <div class="sidebar-bottom">
+        <button type="button" class="btn-nueva-sot-bottom" onclick="nuevaSeccion()">+ Nueva SOT</button>
+      </div>
     </aside>
 
     <!-- ── MAIN ── -->
@@ -161,7 +225,7 @@
                  oninput="actualizarNumero(this.value)"
                  onkeydown="if(event.key==='Enter'){ actualizarNumero(this.value); guardarFormActual(); generarPlantilla(); this.blur(); }" />
         </div>
-        <div class="sec-tipo-badge" id="seccionTipoBadge">Sin gestión</div>
+        <div class="sec-tipo-badge" id="seccionTipoBadge">SIN GESTIÓN</div>
         <div class="topbar-spacer"></div>
         <button class="btn-del-icon" onclick="confirmarEliminarSeccion()" title="Eliminar sección">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -171,17 +235,21 @@
         </button>
       </div>
 
-      <!-- ════ CONTENT GRID (3 COLUMNAS SIMÉTRICAS) ════ -->
-      <div class="content-grid">
+      <!-- ════ CONTENT GRID: COMPOSITE CENTRAL + HERRAMIENTAS ════ -->
+      <div class="content-grid-composite">
 
-        <!-- ┌── COLUMNA 1: DATOS DE LA GESTIÓN ──┐ -->
-        <div class="col-left">
-          <section class="panel panel-form">
-            <div class="panel-header">
-              <h2>📋 Datos de la Gestión</h2>
-            </div>
+        <!-- ── CENTRO: 2 COLUMNAS (PLANTILLAS Y HERRAMIENTAS OCR/NOTAS) ── -->
+        <div class="main-center-panels">
 
-            <form id="ticketForm" autocomplete="off" onsubmit="return false;">
+          <!-- ── COLUMNA 1 (CÍRCULO ROJO): PLANTILLAS (DATOS + PLANTILLA GENERADA) ── -->
+          <div class="center-col-plantillas">
+
+            <!-- Panel: Datos & Plantilla -->
+            <section class="panel" id="panelDatos">
+              <div class="panel-header">
+                <h2><i class="fa-regular fa-clipboard"></i> Datos &amp; Plantilla</h2>
+              </div>
+              <form id="ticketForm" autocomplete="off" onsubmit="return false;">
 
               <!-- TIPO GESTIÓN -->
               <div class="field-group">
@@ -345,14 +413,16 @@
               </div>
             </form>
           </section>
-        </div>
 
-        <!-- ┌── COLUMNA 2: PLANTILLA GENERADA & BLOC DE NOTAS ──┐ -->
-        <div class="col-mid">
-          <!-- PREVIEW -->
-          <section class="panel panel-preview">
-            <div class="panel-header">
-              <h2>📄 Plantilla Generada</h2>
+        </div> <!-- Fin center-col-plantillas -->
+
+        <!-- ── COLUMNA 2: PLANTILLA GENERADA, OCR Y BLOC DE NOTAS ── -->
+        <div class="center-col-herramientas">
+
+          <!-- Panel 1: Plantilla Generada (Arriba en Columna 2) -->
+          <section class="panel" id="panelPlantillaGenerada">
+            <div class="panel-header" style="justify-content: space-between;">
+              <h2><i class="fa-solid fa-file-lines"></i> Plantilla Generada</h2>
               <button class="btn-copy" id="btnCopy" onclick="copiarPlantilla()" disabled>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -361,66 +431,76 @@
                 Copiar
               </button>
             </div>
-            <div id="previewEmpty" class="preview-empty">
-              <p>Completa el formulario y presiona<br/><strong>Generar Plantilla</strong></p>
-            </div>
-            <div id="previewContent" class="preview-content hidden">
-              <pre id="plantillaTexto" class="plantilla-pre"></pre>
-            </div>
-            <div id="copyFeedback" class="copy-feedback hidden">Copiado al portapapeles</div>
-          </section>
-
-          <!-- BLOC DE NOTAS -->
-          <section class="panel panel-notes">
-            <div class="panel-header notes-header">
-              <h2>📝 Bloc de Notas</h2>
-              <span class="notes-hint">Uso interno</span>
-            </div>
-            <div class="notes-body">
-              <textarea id="notasTexto" class="notes-ta"
-                        placeholder="Escribe aquí notas, pasos pendientes, datos temporales…"></textarea>
+            <div class="plantilla-preview-body">
+              <div id="previewEmpty" class="preview-empty">
+                <p>Complete el formulario y presione<br/><strong>Generar Plantilla</strong></p>
+              </div>
+              <div id="previewContent" class="preview-content hidden">
+                <pre id="plantillaTexto" class="plantilla-pre"></pre>
+              </div>
+              <div id="copyFeedback" class="copy-feedback hidden">Copiado al portapapeles</div>
             </div>
           </section>
 
-          <!-- APARTADO ESCÁNER OCR (DEBAJO DEL BLOC DE NOTAS) -->
-          <section class="panel panel-ocr-simple" style="margin-top: 1rem;">
-            <div class="panel-header notes-header">
-              <h2>📷 Escáner OCR de Recortes</h2>
-              <span class="notes-hint">Pega con Ctrl + V</span>
+          <!-- Panel 2: Escáner OCR (Al medio en Columna 2) -->
+          <section class="panel" id="panelOCR">
+            <div class="panel-header" style="justify-content: space-between;">
+              <h2><i class="fa-solid fa-expand"></i> Escáner OCR</h2>
+              <span class="ocr-hint-pill">Ctrl + V</span>
             </div>
-            <div class="notes-body" style="display:flex; flex-direction:column; gap:0.6rem;">
-              <div id="dropzoneOCR" class="dropzone-simple active" onclick="document.getElementById('fileInputOCR').click()" style="border:2px dashed var(--border); border-radius:8px; padding:1rem; text-align:center; background:#0f172a; cursor:pointer;">
-                <span style="font-size:0.8rem; color:var(--text-muted);">Pega tu foto aquí con <code style="color:#f472b6;">Ctrl + V</code> o haz clic para seleccionar</span>
+            <div class="ocr-body">
+              <div id="dropzoneOCR" class="dropzone-simple active" onclick="document.getElementById('fileInputOCR').click()">
+                <div class="ocr-scan-frame-icon">
+                  <i class="fa-solid fa-crop-simple"></i>
+                </div>
+                <span class="ocr-dropzone-label">Pega o Arrastra tu imagen</span>
                 <input type="file" id="fileInputOCR" accept="image/*" style="display:none;" />
               </div>
 
-              <div id="cropperWrapperOCR" class="cropper-wrapper-simple hidden" style="max-height:220px; background:#000; border-radius:8px; overflow:hidden;">
+              <div id="cropperWrapperOCR" class="cropper-wrapper-simple hidden">
                 <img id="imageToCropOCR" src="" alt="Recorte" style="max-width:100%; display:block;" />
               </div>
 
-              <div id="cropperToolbarOCR" class="cropper-toolbar-simple hidden" style="display:flex; flex-direction:column; gap:0.4rem;">
-                <div style="font-size:0.72rem; color:var(--text-muted); text-align:center; background:rgba(255,255,255,0.04); padding:3px 6px; border-radius:4px;">
+              <div id="cropperToolbarOCR" class="cropper-toolbar-simple hidden">
+                <div class="cropper-hint-text">
                   🖱️ <strong>Clic Izquierdo:</strong> Subrayar &nbsp;|&nbsp; <strong>Clic Derecho:</strong> Mover imagen &nbsp;|&nbsp; <strong>Rueda:</strong> Zoom
                 </div>
-                <div style="display:flex; gap:0.45rem;">
-                  <button type="button" id="btnExtractTextOCR" onclick="processOCRSimple()" class="btn-sm-primary" style="flex:1; padding:7px 12px; font-size:0.8rem; font-weight:800; border-radius:6px; cursor:pointer;" title="Escanear la zona seleccionada">
+                <div class="cropper-btns-row">
+                  <button type="button" id="btnExtractTextOCR" class="btn-sm-primary" title="Escanear la zona seleccionada">
                     <i class="fa-solid fa-bolt"></i> Escanear Recorte
                   </button>
-                  <button type="button" id="btnRemoveImageOCR" onclick="clearOCRImage()" class="btn-sm-danger" style="padding:7px 12px; font-size:0.8rem; font-weight:800; border-radius:6px; cursor:pointer;" title="Eliminar la foto actual">
+                  <button type="button" id="btnRemoveImageOCR" onclick="clearOCRImage()" class="btn-sm-danger" title="Eliminar la foto actual">
                     🗑️ Borrar Imagen
                   </button>
                 </div>
               </div>
 
-              <textarea id="ocrOutputSimple" class="notes-ta" rows="3" readonly placeholder="El texto escaneado de tu recorte aparecerá aquí..."></textarea>
+              <textarea id="ocrOutputSimple" class="ocr-output-ta" rows="3" readonly placeholder="El texto escaneado de tu recorte aparecerá aquí..."></textarea>
               
-              <button type="button" id="btnCopyOCRText" class="btn-copy-mac" onclick="copyOCRResultText()" style="justify-content:center; width:100%; padding:8px;">📋 Copiar Texto Escaneado</button>
+              <button type="button" id="btnCopyOCRText" class="btn-copy-ocr-main" onclick="copyOCRResultText()">
+                📋 Copiar Texto Escaneado
+              </button>
             </div>
           </section>
-        </div>
 
-        <!-- ┌── COLUMNA 3: HERRAMIENTAS ──┐ -->
-        <div class="col-right">
+          <!-- Panel 2: Bloc de Notas (Abajo en Columna 2) -->
+          <section class="panel" id="panelNotas">
+            <div class="panel-header" style="justify-content: space-between;">
+              <h2><i class="fa-regular fa-note-sticky"></i> Bloc de Notas</h2>
+              <span class="badge-internal">USO INTERNO</span>
+            </div>
+            <div class="notes-body">
+              <textarea id="notasTexto" class="notes-ta"
+                        placeholder="Escribe aquí notas, pases pendientes, datos temporales…"></textarea>
+            </div>
+          </section>
+
+        </div> <!-- Fin center-col-herramientas -->
+
+      </div> <!-- Fin main-center-panels -->
+
+    <!-- ┌── COLUMNA 3: HERRAMIENTAS ──┐ -->
+    <div class="col-right">
           <section class="panel panel-codes">
             <div class="panel-header codes-header">
               <h2>🔑 Generador de Códigos (A/B)</h2>
@@ -436,7 +516,7 @@
               <div class="field-group">
                 <label class="field-label">Códigos Generados</label>
                 <textarea id="codeOutput" readonly placeholder="Los códigos generados aparecerán aquí..."
-                          style="height:85px; font-family:'JetBrains Mono', monospace; font-size:0.8rem; resize:vertical; background:#0f172a; border:1px solid var(--border); color:#f8fafc; padding:0.6rem; border-radius:6px; outline:none;"></textarea>
+                          style="height:85px; font-family:'JetBrains Mono', monospace; font-size:0.8rem; resize:vertical; background:var(--bg-card-sub); border:1px solid var(--border); color:var(--text-primary); padding:0.6rem; border-radius:6px; outline:none;"></textarea>
               </div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.45rem; margin-top:0.2rem;">
                 <button type="button" class="btn-sm-primary" onclick="generarCodigoAB()">⚡ Generar</button>
@@ -524,38 +604,39 @@
 
             </div>
           </section>
+        </div>
       </div>
     </main>
   </div> <!-- Fin de app-wrapper -->
 
   <!-- ═══ MODAL CONFIGURACIÓN DE USUARIO (SOLICITUD INICIAL) ═══ -->
-  <div id="userProfileModal" class="ocr-modal-backdrop hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
-    <div style="background:#1e293b; border:1px solid var(--border); border-radius:12px; width:90%; max-width:400px; padding:1.5rem; box-shadow:0 20px 25px -5px rgba(0,0,0,0.6); color:#f8fafc;">
+  <div id="userProfileModal" class="ocr-modal-backdrop hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:14px; width:90%; max-width:400px; padding:1.5rem; box-shadow:var(--shadow); color:var(--text-primary);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
-        <h3 style="margin:0; font-size:1.1rem; color:#38bdf8; display:flex; align-items:center; gap:0.5rem;">
+        <h3 style="margin:0; font-size:1.1rem; color:var(--accent); display:flex; align-items:center; gap:0.5rem; font-weight:700;">
           👤 Configura tus Datos de Asesor
         </h3>
-        <button type="button" onclick="closeUserProfileModal()" style="background:none; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">✕</button>
+        <button type="button" onclick="closeUserProfileModal()" style="background:none; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;" title="Cerrar">✕</button>
       </div>
 
-      <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.4;">
+      <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1.1rem; line-height:1.45;">
         Bienvenido. Por favor ingresa tu <strong>Nombre Completo</strong> y tu <strong>Usuario E</strong>. Tus plantillas y códigos generados se completarán automáticamente con estos datos.
       </p>
 
       <form onsubmit="saveUserProfile(event)">
         <div class="field-group" style="margin-bottom:1rem;">
-          <label class="field-label" for="profNombre">Nombre Completo</label>
-          <input type="text" id="profNombre" placeholder="Ej. ANGEL LLAMACPONCCA" required style="text-transform:uppercase;" />
+          <label class="field-label" for="profNombre" style="color:var(--text-secondary); font-size:0.78rem; font-weight:700; text-transform:uppercase; margin-bottom:0.35rem; display:block;">Nombre Completo</label>
+          <input type="text" id="profNombre" class="mac-input" placeholder="Ej. ANGEL LLAMACPONCCA" required style="text-transform:uppercase; width:100%; background:var(--bg-card-sub); border:1px solid var(--border); color:var(--text-primary); border-radius:8px; padding:0.65rem 0.85rem; font-size:0.9rem;" />
         </div>
 
-        <div class="field-group" style="margin-bottom:1.2rem;">
-          <label class="field-label" for="profUserE">Usuario E (Cuenta E)</label>
-          <input type="text" id="profUserE" placeholder="Ej. E758975" maxlength="7" required style="text-transform:uppercase;" />
+        <div class="field-group" style="margin-bottom:1.3rem;">
+          <label class="field-label" for="profUserE" style="color:var(--text-secondary); font-size:0.78rem; font-weight:700; text-transform:uppercase; margin-bottom:0.35rem; display:block;">Usuario E (Cuenta E)</label>
+          <input type="text" id="profUserE" class="mac-input" placeholder="Ej. E758975" maxlength="7" required style="text-transform:uppercase; width:100%; background:var(--bg-card-sub); border:1px solid var(--border); color:var(--text-primary); border-radius:8px; padding:0.65rem 0.85rem; font-size:0.9rem;" />
         </div>
 
-        <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
-          <button type="button" class="btn-secondary" onclick="closeUserProfileModal()">Cancelar</button>
-          <button type="submit" class="btn-primary" style="padding:8px 16px;">💾 Guardar Datos</button>
+        <div style="display:flex; gap:0.6rem; justify-content:flex-end;">
+          <button type="button" class="btn-secondary" onclick="closeUserProfileModal()" style="padding:8px 16px; border-radius:8px; cursor:pointer;">Cancelar</button>
+          <button type="submit" class="btn-primary" style="padding:8px 18px; border-radius:8px; cursor:pointer; font-weight:700;">💾 Guardar Datos</button>
         </div>
       </form>
     </div>
