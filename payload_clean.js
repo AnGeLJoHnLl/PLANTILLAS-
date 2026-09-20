@@ -10,6 +10,10 @@ const MODELOS = {
   ftth: ['HG8145V5','F6600PV9.0.12','F680V6.0.08','HG8145X6-10','HG8145X6-13','HG8245W5-6T'],
 };
 
+// Modelos específicos ONT FTTH por marca
+const MODELOS_ONT_HUAWEI = ['HG8145V5','HG8145X6-10','HG8145X6-13','HG8245W5-6T'];
+const MODELOS_ONT_ZTE    = ['F6600PV9.0.12','F680V6.0.08'];
+
 // Decos: IPTV (ambas techs) + exclusivos HFC
 const MODELOS_DECO = {
   iptv: ['B866V2','B866V2-H','SEI800AMXPE'],
@@ -31,7 +35,7 @@ const GESTIONES = {
   cambio_plan:         { titulo:'CAMBIO DE PLAN',      labelEquipo:'EQUIPO ACTIVADO',             labelEstado:'ESTADO',      mostrarEquipo:true,  mostrarMesh:false, mostrarAgregar:true  },
   traslado_externo:    { titulo:'TRASLADO EXTERNO',    labelEquipo:'EQUIPO ACTIVADO',             labelEstado:'ESTADO',      mostrarEquipo:true,  mostrarMesh:false, mostrarAgregar:true  },
   reenvio_senal:       { titulo:'REENVIO DE SEÑAL',    labelEquipo:'EQUIPO CON REENVIO DE SEÑAL', labelEstado:'CONFORMIDAD', mostrarEquipo:true,  mostrarMesh:false, mostrarAgregar:true  },
-  activacion_mesh:     { titulo:'ACTIVACION MESH',     labelEquipo:null,                          labelEstado:'ESTADO',      mostrarEquipo:false, mostrarMesh:true,  mostrarAgregar:false },
+  activacion_mesh:     { titulo:'ACTIVACION MESH',     labelEquipo:null,                          labelEstado:'ESTADO',      mostrarEquipo:false, mostrarMesh:true,  mostrarAgregar:true  },
   codigo_autorizacion: { titulo:'CODIGO AUTORIZACION', labelEquipo:'EQUIPO CON CODIGO',           labelEstado:'ESTADO',      mostrarEquipo:true,  mostrarMesh:false, mostrarAgregar:true  },
   cambio_equipo:       { titulo:'CAMBIO DE EQUIPO',    labelEquipo:'EQUIPO DENEGADO / DAÑADO',    labelEstado:'ESTADO',      mostrarEquipo:true,  mostrarMesh:false, mostrarAgregar:true  },
   sot_mantto:          { titulo:'SOT DE MANTO',        labelEquipo:'EQUIPO AFECTADO',             labelEstado:'ESTADO',      mostrarEquipo:true,  mostrarMesh:false, mostrarAgregar:true  },
@@ -242,108 +246,20 @@ const DERIVACION_PEXT_FTTH_SUBTIPOS = {
 };
 
 // ════════════════════════════════
-//  RECHAZOS TÉCNICOS SUBTIPOS
+//  MOTIVOS RECHAZO GENERAL
 // ════════════════════════════════
-const RECHAZO_SUBTIPOS = {
-  'RED SATURADA': {
-    campos: [
-      { key:'tecnico',       label:'TÉCNICO',         type:'text', ph:'Nombre del técnico' },
-      { key:'tipo_actividad',label:'TIPO DE ACTIVIDAD',type:'select', options:['','Instalación','Postventa'] },
-      { key:'sub_motivo',    label:'SUB-MOTIVO RECHAZO',type:'select', options:['','TAP o FAT saturado en plano horizontal','TAP O FAT saturado en plano vertical'] },
-      { key:'plano',         label:'PLANO',            type:'text' },
-      { key:'coord_cli',     label:'COORDENADA CLIENTE',    type:'text' },
-      { key:'coord_tec',     label:'COORDENADA DEL TÉCNICO',type:'text' },
-      { key:'obs', label:'OBSERVACIONES', type:'text', def:'PROCEDE RECHAZO; se verifica con plantilla TAP o FAT SATURADO.' },
-    ],
-    tmpl: [
-      'RECHAZO EN CAMPO',
-      'TÉCNICO: {tecnico}',
-      'ASESOR: {asesor}',
-      'TIPO DE CASO: Rechazo',
-      'TIPO DE ACTIVIDAD: {tipo_actividad}',
-      'ESTADO DE SOLICITUD: Atendido',
-      'SUB-ESTADO DE SOLICITUD: Se rechaza SOT',
-      'MOTIVO RECHAZO: RED SATURADA',
-      'SUB-MOTIVO RECHAZO: {sub_motivo}',
-      'PLANO: {plano}',
-      'COORDENADA CLIENTE: {coord_cli}',
-      'COORDENADA DEL TÉCNICO: {coord_tec}',
-      'OBSERVACIONES: {obs}',
-    ],
-  },
-  'FACTIBILIDAD TÉCNICA': {
-    campos: [
-      { key:'tecnico',       label:'TÉCNICO',          type:'text', ph:'Nombre del técnico' },
-      { key:'tipo_actividad',label:'TIPO DE ACTIVIDAD', type:'select', options:['','Instalación','Postventa'] },
-      { key:'sub_motivo',    label:'SUB-MOTIVO RECHAZO',type:'select', options:['','FALTA DE PUNTOS DE APOYO PARA ACOMETIDA','ACOMETIDA EXCEDE METRAJE','ACOMETIDA CRUZARIA DOBLE VIA'] },
-      { key:'coord_cli',     label:'COORDENADA CLIENTE',    type:'text' },
-      { key:'coord_tec',     label:'COORDENADA DEL TÉCNICO',type:'text' },
-      { key:'obs', label:'OBSERVACIONES', type:'text', def:'PROCEDE RECHAZO; realizar quiebre en TOA y validar condiciones del domicilio.' },
-    ],
-    tmpl: [
-      'RECHAZO EN CAMPO',
-      'TÉCNICO: {tecnico}',
-      'ASESOR: {asesor}',
-      'TIPO DE CASO: Rechazo',
-      'TIPO DE ACTIVIDAD: {tipo_actividad}',
-      'ESTADO DE SOLICITUD: Atendido',
-      'SUB-ESTADO DE SOLICITUD: Se rechaza SOT',
-      'MOTIVO RECHAZO: FACTIBILIDAD TÉCNICA',
-      'SUB-MOTIVO RECHAZO: {sub_motivo}',
-      'COORDENADA CLIENTE: {coord_cli}',
-      'COORDENADA DEL TÉCNICO: {coord_tec}',
-      'OBSERVACIONES: {obs}',
-    ],
-  },
-  'EDIFICIO NO LIBERADO': {
-    campos: [
-      { key:'tecnico',       label:'TÉCNICO',          type:'text', ph:'Nombre del técnico' },
-      { key:'tipo_actividad',label:'TIPO DE ACTIVIDAD', type:'select', options:['','Instalación','Postventa'] },
-      { key:'direccion',     label:'DIRECCIÓN',         type:'text' },
-      { key:'coord_cli',     label:'COORDENADA CLIENTE',    type:'text' },
-      { key:'coord_tec',     label:'COORDENADA DEL TÉCNICO',type:'text' },
-      { key:'obs', label:'OBSERVACIONES', type:'text', def:'PROCEDE RECHAZO; el edificio no se encuentra liberado para instalación.' },
-    ],
-    tmpl: [
-      'RECHAZO EN CAMPO',
-      'TÉCNICO: {tecnico}',
-      'ASESOR: {asesor}',
-      'TIPO DE CASO: Rechazo',
-      'TIPO DE ACTIVIDAD: {tipo_actividad}',
-      'ESTADO DE SOLICITUD: Atendido',
-      'SUB-ESTADO DE SOLICITUD: Se rechaza SOT',
-      'MOTIVO RECHAZO: EDIFICIO NO LIBERADO',
-      'SUB-MOTIVO RECHAZO: Edificio no liberado para atención',
-      'DIRECCIÓN: {direccion}',
-      'COORDENADA CLIENTE: {coord_cli}',
-      'COORDENADA DEL TÉCNICO: {coord_tec}',
-      'OBSERVACIONES: {obs}',
-    ],
-  },
-  'FALTA DE INFRAESTRUCTURA DE RED': {
-    campos: [
-      { key:'tecnico', key2:'dni', type:'dual', label:'TÉCNICO / DNI', pre1:'Técnico:', pre2:'DNI:' },
-      { key:'tipo_actividad',label:'TIPO DE ACTIVIDAD', type:'select', options:['','Instalación','Postventa'] },
-      { key:'coord_cli',     label:'COORDENADA CLIENTE',    type:'text' },
-      { key:'coord_tec',     label:'COORDENADA DEL TÉCNICO',type:'text' },
-      { key:'obs', label:'OBSERVACIONES', type:'text', def:'PROCEDE RECHAZO; se valida domicilio fuera de cobertura.' },
-    ],
-    tmpl: [
-      'RECHAZO EN CAMPO',
-      'TÉCNICO: {tecnico}                    DNI: {dni}',
-      'ASESOR: {asesor}',
-      'TIPO DE CASO: Rechazo',
-      'TIPO DE ACTIVIDAD: {tipo_actividad}',
-      'ESTADO DE SOLICITUD: Atendido',
-      'SUB-ESTADO DE SOLICITUD: Se rechaza SOT',
-      'MOTIVO RECHAZO: FALTA DE INFRAESTRUCTURA DE RED',
-      'SUB-MOTIVO RECHAZO: No hay red HFC/FTTH en la zona o avenida',
-      'COORDENADA CLIENTE: {coord_cli}',
-      'COORDENADA DEL TÉCNICO: {coord_tec}',
-      'OBSERVACIONES: {obs}',
-    ],
-  },
-};
+const MOTIVOS_RECHAZO = [
+  'ERROR DE TOA NO VALIDO',
+  'TECNICO NO ENVIA ERROR DE TOA',
+  'TECNICO NO CONTESTA',
+  'TECNICO NO ENVIA EVIDENCIAS SUFICIENTES',
+  'TECNICO NO ENVIA EQUIPOS CORRECTOS',
+  'SOT INCORRECTA',
+  'SOT EN ESTADO RECHAZADA',
+  'SOT EN ESTADO ATENDIDA',
+  'SOT MAL GENERADA',
+  'SE CIERRA TICKET A SOLICITUD DEL TECNICO'
+];
 
 // ════════════════════════════════
 //  MOTIVOS CAMBIO DE EQUIPO & CODIGO AUTORIZACION
@@ -410,22 +326,30 @@ const GESTIONES_ESPECIALES = {
       { key: 'estado', label: 'ESTADO',                type: 'select', options: ['', 'ATENDIDA', 'ATENDIDA SIN CONFORMIDAD', 'PENDIENTE SE DERIVA A SISTEMAS', 'DENEGADA'] }
     ]
   },
+  rechazo_general: {
+    titulo: 'RECHAZO GENERAL',
+    header: 'MESA MULTISKILL HITSS – RECHAZO',
+    realizadoPorSuffix: '',
+    campos: [
+      { key: 'motivo', label: 'MOTIVO DE RECHAZO', type: 'motivo_rechazo_select' },
+      { key: 'estado', label: 'ESTADO', type: 'select', options: ['DENEGADO', 'ATENDIDA', 'ATENDIDA SIN CONFORMIDAD', 'PENDIENTE SE DERIVA A SISTEMAS'], def: 'DENEGADO' }
+    ]
+  },
   // Custom rendered types (no campos array)
   cintillos_ftth:       { titulo:'CONSULTA DE CINTILLOS FTTH', realizadoPorSuffix:'' },
   cintillos_hfc:        { titulo:'CONSULTA DE CINTILLOS HFC',  realizadoPorSuffix:'' },
   derivacion_pext_hfc:  { titulo:'DERIVACION PEXT HFC',  header:'MESA MULTISKILL - DERIVACION PEXT', realizadoPorSuffix:'' },
   derivacion_pext_ftth: { titulo:'DERIVACION PEXT FTTH', header:'MESA MULTISKILL - DERIVACION PEXT', realizadoPorSuffix:'' },
-  rechazo_tecnico:      { titulo:'RECHAZO TÉCNICO', header:'MESA MULTISKILL HITSS', realizadoPorSuffix:'' },
 };
 
 // ════════════════════════════════
 //  HELPERS DE TIPO
 // ════════════════════════════════
-function esEspecial(tipo) { return tipo in GESTIONES_ESPECIALES; }
+function esEspecial(tipo) { return (tipo in GESTIONES_ESPECIALES) || tipo === 'rechazo_tecnico'; }
 function esEstandar(tipo) { return tipo in GESTIONES; }
 function esCintillo(tipo) { return tipo === 'cintillos_ftth' || tipo === 'cintillos_hfc'; }
 function esPext(tipo)     { return tipo === 'derivacion_pext_hfc' || tipo === 'derivacion_pext_ftth'; }
-function esRechazo(tipo)  { return tipo === 'rechazo_tecnico'; }
+function esRechazo(tipo)  { return tipo === 'rechazo_general' || tipo === 'rechazo_tecnico'; }
 
 // ════════════════════════════════
 //  DATA STORE
@@ -685,6 +609,7 @@ function inicializar() {
   initCuentas();
   initCodeGenerator();
   setupNotesSmartPaste();
+  initPanelReordering();
   checkInitialUserProfile();
 
   // Guardar formulario automáticamente ante cualquier cambio
@@ -725,7 +650,10 @@ function toggleThemeMenu(event) {
 
 function updateThemeMenuUI(themeName) {
   const currentTheme = themeName || document.documentElement.getAttribute('data-theme') || 'purple';
-  const themes = ['pink', 'purple-light', 'red-light', 'cyan-light', 'purple'];
+  const themes = [
+    'pink', 'purple-light', 'red-light', 'cyan-light',
+    'pink-dark', 'purple-dark', 'red-dark', 'cyan-dark', 'purple'
+  ];
   themes.forEach(t => {
     const badge = g('badge-' + t);
     if (badge) {
@@ -981,11 +909,11 @@ function onTipoChange() {
 //  RENDER FORM ESPECIAL (dispatch)
 // ════════════════════════════════
 function renderFormEspecial(tipo, vals) {
+  if (tipo === 'rechazo_tecnico') tipo = 'rechazo_general';
   if (tipo === 'cintillos_ftth')        { renderFormCintillosFTTH(vals); return; }
   if (tipo === 'cintillos_hfc')         { renderFormCintillosHFC(vals);  return; }
   if (tipo === 'cambio_equipo')         { renderFormCambioEquipo(vals);  return; }
   if (esPext(tipo))                     { renderFormDerivacionPext(tipo, vals); return; }
-  if (esRechazo(tipo))                  { renderFormRechazo(vals); return; }
 
   // Genérico (codigo_autorizacion, sot_mantto, cambio_plano, etc.)
   const cfg = GESTIONES_ESPECIALES[tipo];
@@ -1544,59 +1472,7 @@ function generarTextoDerivacionPext(s) {
   return L.join('\n');
 }
 
-// ════════════════════════════════
-//  ── RECHAZOS TÉCNICOS ──
-// ════════════════════════════════
-function renderFormRechazo(vals) {
-  const currSub = vals.rechazo_subtipo || '';
-  const opts    = Object.keys(RECHAZO_SUBTIPOS).map(k =>
-    `<option value="${k}" ${currSub===k?'selected':''}>${k}</option>`).join('');
 
-  let html = `
-    <div class="field-group">
-      <label class="field-label">⚠️ Motivo de Rechazo</label>
-      <div class="sel-wrap">
-        <select id="cesp_rechazo_subtipo" onchange="onRechazoSubtipoChange()">
-          <option value="">— Selecciona el motivo —</option>
-          ${opts}
-        </select>
-        <span class="sel-arrow">▾</span>
-      </div>
-    </div>`;
-
-  if (currSub && RECHAZO_SUBTIPOS[currSub]) {
-    html += renderSubtipoCampos(RECHAZO_SUBTIPOS[currSub].campos, vals);
-  }
-
-  const area = g('customFormArea');
-  area.innerHTML = html;
-  area.classList.remove('hidden');
-}
-
-function onRechazoSubtipoChange() {
-  if (secciones.length === 0) return;
-  const s = secciones[seccionActiva];
-  guardarCamposCustom(s);
-  renderFormRechazo(s.camposPersonalizados);
-}
-
-function generarTextoRechazo(s) {
-  const cfg  = GESTIONES_ESPECIALES[s.tipoGestion];
-  const vals = s.camposPersonalizados || {};
-  const sub  = vals.rechazo_subtipo || '';
-  if (!sub) return `${cfg.header}\n[Sin motivo seleccionado]`;
-  const scfg = RECHAZO_SUBTIPOS[sub];
-  if (!scfg) return '';
-  const L = [cfg.header];
-  const ticketVal = (s.nTicket || '').trim();
-  if (ticketVal !== '') {
-    L.push(`N. TICKET: ${ticketVal}`);
-  }
-  const asesorName = s.realizadoPor?.trim() || getStoredUserName();
-  scfg.tmpl.forEach(line => L.push(line.replace(/\{(\w+)\}/g, (_, k) => k === 'asesor' ? asesorName : (vals[k] || '—'))));
-  L.push(`REALIZADO POR: ${asesorName}`);
-  return L.join('\n');
-}
 
 // ════════════════════════════════
 //  RENDER CAMPOS SUBTIPO (shared by PEXT + RECHAZO)
@@ -1622,10 +1498,34 @@ function renderSubtipoCampos(campos, vals) {
           </div>
         </div>`;
     } else if (c.type === 'select') {
-      const currVal = (c.key in vals) ? vals[c.key] : '';
+      const currVal = (c.key in vals && vals[c.key] !== '') ? vals[c.key] : (c.def || '');
       const onchAttr = c.onchange ? `onchange="${c.onchange}"` : '';
       const opts = c.options.map(o => `<option value="${o}" ${currVal===o?'selected':''}>${o||'— Selecciona —'}</option>`).join('');
       html += `<div class="field-group ${hiddenCls}" ${groupAttr}><label class="field-label">${c.label}</label><div class="sel-wrap"><select id="cesp_${c.key}" ${onchAttr}>${opts}</select><span class="sel-arrow">▾</span></div></div>`;
+    } else if (c.type === 'motivo_rechazo_select') {
+      const currVal = (c.key in vals) ? vals[c.key] : '';
+      const isMan = currVal !== '' && !MOTIVOS_RECHAZO.includes(currVal);
+      const selVal = isMan ? '__manual__' : currVal;
+      const manVal = isMan ? currVal : '';
+
+      let optsHtml = `<option value="">— Selecciona motivo de rechazo —</option>`;
+      MOTIVOS_RECHAZO.forEach(m => {
+        optsHtml += `<option value="${m}" ${selVal===m?'selected':''}>${m}</option>`;
+      });
+      optsHtml += `<option value="__manual__" ${selVal==='__manual__'?'selected':''}>✏️ Otro / Escribir motivo manualmente…</option>`;
+
+      html += `
+        <div class="field-group ${hiddenCls}" ${groupAttr}>
+          <label class="field-label">${c.label}</label>
+          <div class="sel-wrap">
+            <select id="cesp_${c.key}" onchange="onMotivoSelectChange(this, 'cesp_${c.key}_manual')">
+              ${optsHtml}
+            </select>
+            <span class="sel-arrow">▾</span>
+          </div>
+          <input type="text" id="cesp_${c.key}_manual" class="input-mod-manual ${isMan ? '' : 'hidden'}"
+                 value="${manVal}" placeholder="Escribe el motivo de rechazo…" style="margin-top:0.4rem" />
+        </div>`;
     } else if (c.type === 'motivo_select') {
       const currVal = (c.key in vals) ? vals[c.key] : '';
       const isMan = currVal !== '' && !MOTIVOS_CAMBIO_AUTORIZACION.includes(currVal);
@@ -1730,7 +1630,26 @@ function aplicarVisibilidad(tipo) {
     populateModelosSelect(tipo, getCurrentTech());
   } else hide('bloqueEquipoPrincipal');
   cfg.mostrarMesh    ? show('bloqueRepetidor') : hide('bloqueRepetidor');
-  cfg.mostrarAgregar ? show('botonesAgregar')  : hide('botonesAgregar');
+  if (cfg.mostrarAgregar) {
+    show('botonesAgregar');
+    const btnDeco = g('btnAddDeco');
+    const btnRep  = g('btnAddRepetidor');
+    if (tipo === 'activacion_mesh') {
+      if (btnDeco) hide(btnDeco);
+      if (btnRep) {
+        show(btnRep);
+        btnRep.textContent = '+ Agregar Repetidor Mesh';
+      }
+    } else {
+      if (btnDeco) show(btnDeco);
+      if (btnRep) {
+        show(btnRep);
+        btnRep.textContent = '+ Repetidor';
+      }
+    }
+  } else {
+    hide('botonesAgregar');
+  }
   g('labelEstado').textContent = cfg.labelEstado;
   extras.forEach(show);
 }
@@ -1747,7 +1666,7 @@ function actualizarBadge(tipo) {
 // ════════════════════════════════
 //  TECNOLOGÍA / MODELOS ── SELECT COMPLETO O POR TECNOLOGÍA
 // ════════════════════════════════
-function populateModelosSelect(tipo, tech) {
+function populateModelosSelect(tipo, tech, brandFilter = null) {
   const sel = g('modeloEquipo');
   if (!sel) return;
 
@@ -1763,19 +1682,31 @@ function populateModelosSelect(tipo, tech) {
     ];
     modelosList = [...new Set(modelosList)];
   } else if (tech === 'hfc') {
+    // en caso de la tecnologia hfc deja las opciones como estan
     modelosList = MODELOS.hfc;
   } else if (tech === 'ftth') {
-    modelosList = MODELOS.ftth;
+    if (brandFilter === 'huawei') {
+      modelosList = MODELOS_ONT_HUAWEI;
+    } else if (brandFilter === 'zte') {
+      modelosList = MODELOS_ONT_ZTE;
+    } else {
+      modelosList = MODELOS.ftth;
+    }
   } else {
     modelosList = [...MODELOS.hfc, ...MODELOS.ftth];
   }
 
   const promptTxt = sinDiscriminar
     ? '— Selecciona modelo (Todos) —'
-    : tech
-      ? `— Selecciona modelo ${tech.toUpperCase()} —`
-      : '— Selecciona modelo —';
+    : (tech === 'ftth' && brandFilter === 'huawei')
+      ? '— Selecciona modelo HUAWEI —'
+      : (tech === 'ftth' && brandFilter === 'zte')
+        ? '— Selecciona modelo ZTE —'
+        : tech
+          ? `— Selecciona modelo ${tech.toUpperCase()} —`
+          : '— Selecciona modelo —';
 
+  const currentVal = sel.value;
   sel.innerHTML = `<option value="">${promptTxt}</option>`;
   modelosList.forEach(m => {
     const opt = document.createElement('option');
@@ -1784,6 +1715,10 @@ function populateModelosSelect(tipo, tech) {
   const manOpt = document.createElement('option');
   manOpt.value = '__manual__'; manOpt.textContent = '✏️ Escribir manualmente…';
   sel.appendChild(manOpt);
+
+  if (currentVal && (modelosList.includes(currentVal) || currentVal === '__manual__')) {
+    sel.value = currentVal;
+  }
 }
 
 function setTech(tech, save=true) {
@@ -1792,13 +1727,77 @@ function setTech(tech, save=true) {
   if (btn) btn.classList.add('active', tech);
 
   const tipo = gv('tipoGestion');
-  populateModelosSelect(tipo, tech);
+  let brandFilter = null;
+  if (tech === 'ftth') {
+    const eqVal = (gv('equipoActivado') || '').trim().toUpperCase();
+    if (eqVal.startsWith('48575443')) brandFilter = 'huawei';
+    else if (eqVal.startsWith('5A544547')) brandFilter = 'zte';
+  }
+  populateModelosSelect(tipo, tech, brandFilter);
 
   // Hide manual input when tech changes
   const man = g('modeloManual');
   if (man) { man.classList.add('hidden'); man.value = ''; }
 
   if (save && secciones.length > 0) secciones[seccionActiva].tecnologia = tech;
+  sincronizarMarcaRepetidoresConOnt();
+}
+
+function getOntBrand() {
+  const currentTech = getCurrentTech();
+  if (currentTech === 'hfc') return null;
+
+  const mod = (gv('modeloEquipo') || '').toUpperCase();
+  const eq  = (gv('equipoActivado') || '').toUpperCase();
+
+  if (MODELOS_ONT_HUAWEI.some(m => m.toUpperCase() === mod) || mod.includes('HUAWEI') || mod.startsWith('HG8')) {
+    return 'huawei';
+  }
+  if (MODELOS_ONT_ZTE.some(m => m.toUpperCase() === mod) || mod.includes('ZTE') || mod.startsWith('F6')) {
+    return 'zte';
+  }
+
+  if (eq.startsWith('48575443')) return 'huawei';
+  if (eq.startsWith('5A544547')) return 'zte';
+
+  return null;
+}
+
+function sincronizarMarcaRepetidoresConOnt() {
+  const brand = getOntBrand();
+  if (!brand) return;
+
+  const targetModel = (brand === 'huawei')
+    ? 'ROUTER K562E-10 50087708 HUAWEI'
+    : 'REPETIDOR ZXHN H3601P 180000528400 ZTE';
+
+  // 1. Sincronizar bloqueRepetidor si visible y no personalizado manualmente
+  const selPrincipal = g('modeloRepetidor');
+  if (selPrincipal && selPrincipal.value !== '__manual__') {
+    if (!selPrincipal.value || (brand === 'huawei' && selPrincipal.value.includes('ZTE')) || (brand === 'zte' && selPrincipal.value.includes('HUAWEI'))) {
+      selPrincipal.value = targetModel;
+      if (typeof onModeloRepetidorChange === 'function') onModeloRepetidorChange();
+    }
+  }
+
+  // 2. Sincronizar repetidores adicionales (Decos omitidos)
+  const repBlocks = document.querySelectorAll('.eq-block-adicional[data-tipo="repetidor"]');
+  repBlocks.forEach(b => {
+    const sel = b.querySelector('.input-mod');
+    const uid = b.dataset.uid;
+    if (sel && sel.value !== '__manual__') {
+      if (!sel.value || (brand === 'huawei' && sel.value.includes('ZTE')) || (brand === 'zte' && sel.value.includes('HUAWEI'))) {
+        sel.value = targetModel;
+        if (secciones.length > 0 && secciones[seccionActiva]) {
+          const item = (secciones[seccionActiva].equiposAdicionales || []).find(e => e.uid === uid);
+          if (item) item.modelo = targetModel;
+        }
+      }
+    }
+  });
+
+  guardarFormActual();
+  generarPlantilla();
 }
 
 function onModeloChange() {
@@ -1810,6 +1809,7 @@ function onModeloChange() {
   } else {
     man.classList.add('hidden');
   }
+  sincronizarMarcaRepetidoresConOnt();
 }
 
 function onEstadoChange() {
@@ -1833,10 +1833,21 @@ function resetTechBtns() {
 function agregarEquipoAdicional(tipo) {
   eqCounter++;
   const uid = `eq_${Date.now()}_${eqCounter}`;
-  renderEqAdicional(tipo, uid, '', '');
+
+  let defaultModelo = '';
+  if (tipo === 'repetidor') {
+    const ontBrand = getOntBrand();
+    if (ontBrand === 'huawei') {
+      defaultModelo = 'ROUTER K562E-10 50087708 HUAWEI';
+    } else if (ontBrand === 'zte') {
+      defaultModelo = 'REPETIDOR ZXHN H3601P 180000528400 ZTE';
+    }
+  }
+
+  renderEqAdicional(tipo, uid, '', defaultModelo);
   if (secciones.length > 0) {
     const arr = secciones[seccionActiva].equiposAdicionales;
-    const newItem = { uid, tipo, equipo: '', modelo: '' };
+    const newItem = { uid, tipo, equipo: '', modelo: defaultModelo };
     if (tipo === 'deco') {
       let lastDecoIndex = -1;
       for (let i = 0; i < arr.length; i++) {
@@ -1851,6 +1862,14 @@ function agregarEquipoAdicional(tipo) {
       arr.push(newItem);
     }
   }
+
+  if (tipo === 'repetidor' && defaultModelo) {
+    const brandName = defaultModelo.includes('HUAWEI') ? 'HUAWEI' : 'ZTE';
+    mostrarAvisoSerial(`✨ Repetidor ${brandName} asignado según marca de ONT`);
+  }
+
+  guardarFormActual();
+  generarPlantilla();
 }
 
 function getCurrentTech() {
@@ -1966,7 +1985,6 @@ function generarPlantilla() {
   if (s.tipoGestion === 'cintillos_ftth')       texto = generarTextoCintillosFTTH(s);
   else if (s.tipoGestion === 'cintillos_hfc')   texto = generarTextoCintillosHFC(s);
   else if (esPext(s.tipoGestion))               texto = generarTextoDerivacionPext(s);
-  else if (esRechazo(s.tipoGestion))            texto = generarTextoRechazo(s);
   else if (esEspecial(s.tipoGestion))           texto = generarTextoEspecial(s);
   else                                          texto = generarTextoEstandar(s);
   s.plantillaGenerada = texto;
@@ -2038,6 +2056,20 @@ function generarTextoEstandar(s) {
 function generarTextoEspecial(s) {
   const cfg = GESTIONES_ESPECIALES[s.tipoGestion];
   const vals= s.camposPersonalizados||{}; const L=[];
+
+  // Plantilla personalizada para RECHAZO GENERAL
+  if (s.tipoGestion === 'rechazo_general' || s.tipoGestion === 'rechazo_tecnico') {
+    L.push('MESA MULTISKILL HITSS – RECHAZO');
+    const ticketVal = (s.nTicket || '').trim();
+    if (ticketVal !== '' && ticketVal !== '—' && ticketVal !== '-') {
+      L.push(`N. TICKET: ${ticketVal}`);
+    }
+    const mot = (vals.motivo || '').trim();
+    L.push(`MOTIVO: ${mot || '—'}`);
+    L.push(`ESTADO: ${(vals.estado || 'DENEGADO').trim()}`);
+    L.push(`REALIZADO POR: ${s.realizadoPor?.trim() || getStoredUserName()}`);
+    return L.join('\n');
+  }
 
   // Plantilla personalizada para ACTIVACION PLUME
   if (s.tipoGestion === 'activacion_plume') {
@@ -2564,32 +2596,106 @@ function autoLimpiarYDetectarSerial(el, isRepeater = false, targetModelSelectId 
     mostrarAvisoSerial('✨ Serie corregida (Sin espacios / O → 0)');
   }
 
-  // 3. Autodetectar modelo de repetidor (ZTE vs HUAWEI)
+  const upper = corregido.toUpperCase();
+
+  // 3. DETECCIÓN EN ONT PRINCIPAL (FTTH)
+  // Prefijo 48575443 -> opciones Huawei; prefijo 5A544547 -> 2 opciones ZTE; HFC intacto
+  const isMainOntInput = (el.id === 'equipoActivado' || el.id === 'cesp_serie_ont');
+  if (isMainOntInput) {
+    const currentTech = getCurrentTech();
+    const tipo = gv('tipoGestion');
+    if (upper.startsWith('48575443')) {
+      setTech('ftth', true);
+      populateModelosSelect(tipo, 'ftth', 'huawei');
+      sincronizarMarcaRepetidoresConOnt();
+      mostrarAvisoSerial('✨ ONT HUAWEI: opciones Huawei desplegadas');
+    } else if (upper.startsWith('5A544547')) {
+      setTech('ftth', true);
+      populateModelosSelect(tipo, 'ftth', 'zte');
+      sincronizarMarcaRepetidoresConOnt();
+      mostrarAvisoSerial('✨ ONT ZTE: 2 opciones ZTE desplegadas');
+    } else {
+      if (currentTech === 'ftth') {
+        populateModelosSelect(tipo, 'ftth', null);
+      }
+      sincronizarMarcaRepetidoresConOnt();
+    }
+    return;
+  }
+
+  // 4. DETECCIÓN EN DECOS
+  // Prefijo ZTE -> B866V2; prefijo GZ2 -> SEI800AMXPE / SEI800AMX; otras series libres
+  const decoBlock = el.closest ? el.closest('.eq-block-adicional[data-tipo="deco"]') : null;
+  if (decoBlock) {
+    const sel = decoBlock.querySelector('.input-mod');
+    const uid = decoBlock.dataset.uid;
+    if (sel) {
+      if (upper.startsWith('ZTE')) {
+        sel.value = 'B866V2';
+        if (typeof onAdicionalModeloChange === 'function') onAdicionalModeloChange(sel);
+        if (secciones.length > 0 && secciones[seccionActiva]) {
+          const item = (secciones[seccionActiva].equiposAdicionales || []).find(e => e.uid === uid);
+          if (item) item.modelo = 'B866V2';
+        }
+        guardarFormActual();
+        generarPlantilla();
+        mostrarAvisoSerial('✨ Deco ZTE detectado (B866V2)');
+      } else if (upper.startsWith('GZ2')) {
+        const seiOpt = Array.from(sel.options).find(o => o.value.toUpperCase().startsWith('SEI800AMX'));
+        const valToSet = seiOpt ? seiOpt.value : 'SEI800AMXPE';
+        sel.value = valToSet;
+        if (typeof onAdicionalModeloChange === 'function') onAdicionalModeloChange(sel);
+        if (secciones.length > 0 && secciones[seccionActiva]) {
+          const item = (secciones[seccionActiva].equiposAdicionales || []).find(e => e.uid === uid);
+          if (item) item.modelo = valToSet;
+        }
+        guardarFormActual();
+        generarPlantilla();
+        mostrarAvisoSerial('✨ Deco detectado (' + (seiOpt ? seiOpt.value : 'SEI800AMX') + ')');
+      }
+    }
+    return;
+  }
+
+  // 5. DETECCIÓN EN REPETIDORES
+  // Prefijo 48575443 -> Huawei; prefijo ZTE -> ZTE
   if (isRepeater) {
     let sel = targetModelSelectId ? g(targetModelSelectId) : null;
+    let uid = null;
     if (!sel && el.closest) {
       const block = el.closest('.eq-block-adicional');
       if (block && block.dataset.tipo === 'repetidor') {
         sel = block.querySelector('.input-mod');
+        uid = block.dataset.uid;
       }
     }
 
     if (sel) {
-      const upper = corregido.toUpperCase();
       if (upper.startsWith('48575443')) {
         sel.value = 'ROUTER K562E-10 50087708 HUAWEI';
         if (typeof onModeloRepetidorChange === 'function') onModeloRepetidorChange();
         if (typeof onAdicionalModeloChange === 'function') onAdicionalModeloChange(sel);
+        if (uid && secciones.length > 0 && secciones[seccionActiva]) {
+          const item = (secciones[seccionActiva].equiposAdicionales || []).find(e => e.uid === uid);
+          if (item) item.modelo = 'ROUTER K562E-10 50087708 HUAWEI';
+        }
         guardarFormActual();
+        generarPlantilla();
         mostrarAvisoSerial('✨ Repetidor HUAWEI seleccionado automáticamente');
       } else if (upper.startsWith('ZTE')) {
         sel.value = 'REPETIDOR ZXHN H3601P 180000528400 ZTE';
         if (typeof onModeloRepetidorChange === 'function') onModeloRepetidorChange();
         if (typeof onAdicionalModeloChange === 'function') onAdicionalModeloChange(sel);
+        if (uid && secciones.length > 0 && secciones[seccionActiva]) {
+          const item = (secciones[seccionActiva].equiposAdicionales || []).find(e => e.uid === uid);
+          if (item) item.modelo = 'REPETIDOR ZXHN H3601P 180000528400 ZTE';
+        }
         guardarFormActual();
+        generarPlantilla();
         mostrarAvisoSerial('✨ Repetidor ZTE seleccionado automáticamente');
       }
     }
+    return;
   }
 }
 
@@ -2759,6 +2865,131 @@ function setupNotesSmartPaste() {
         }).catch(() => {});
       }
     }, 10);
+  });
+}
+
+// ════════════════════════════════
+//  REORDENAMIENTO DE PANELES (COLUMNA 2)
+// ════════════════════════════════
+const PANEL_STORAGE_KEY = 'hitss_center_panel_order';
+
+function moverPanel(panelId, direccion) {
+  const container = g('centerColHerramientas');
+  const panel = g(panelId);
+  if (!container || !panel) return;
+
+  if (direccion === 'arriba') {
+    const prev = panel.previousElementSibling;
+    if (prev && prev.classList.contains('reorderable-panel')) {
+      container.insertBefore(panel, prev);
+      animarPanelReordenado(panel);
+      guardarOrdenPaneles();
+    }
+  } else if (direccion === 'abajo') {
+    const next = panel.nextElementSibling;
+    if (next && next.classList.contains('reorderable-panel')) {
+      container.insertBefore(next, panel);
+      animarPanelReordenado(panel);
+      guardarOrdenPaneles();
+    }
+  }
+}
+
+function animarPanelReordenado(panel) {
+  panel.classList.remove('panel-reordered-anim');
+  void panel.offsetWidth; // Forzar reflow para reiniciar animación
+  panel.classList.add('panel-reordered-anim');
+  setTimeout(() => panel.classList.remove('panel-reordered-anim'), 400);
+}
+
+function guardarOrdenPaneles() {
+  const container = g('centerColHerramientas');
+  if (!container) return;
+  const panels = Array.from(container.children).filter(el => el.classList.contains('reorderable-panel'));
+  const ids = panels.map(p => p.id);
+  localStorage.setItem(PANEL_STORAGE_KEY, JSON.stringify(ids));
+}
+
+function restaurarOrdenPaneles() {
+  const container = g('centerColHerramientas');
+  if (!container) return;
+  try {
+    const raw = localStorage.getItem(PANEL_STORAGE_KEY);
+    if (!raw) return;
+    const ids = JSON.parse(raw);
+    if (Array.isArray(ids) && ids.length > 0) {
+      ids.forEach(id => {
+        const panel = g(id);
+        if (panel && panel.parentElement === container) {
+          container.appendChild(panel);
+        }
+      });
+    }
+  } catch (e) {
+    console.error('Error al restaurar orden de paneles:', e);
+  }
+}
+
+function initPanelReordering() {
+  const container = g('centerColHerramientas');
+  if (!container) return;
+
+  // Restaurar orden guardado
+  restaurarOrdenPaneles();
+
+  // Configurar Drag & Drop nativo
+  let draggedPanel = null;
+
+  container.querySelectorAll('.reorderable-panel').forEach(panel => {
+    const handle = panel.querySelector('.panel-drag-handle');
+    if (handle) {
+      handle.setAttribute('draggable', 'true');
+      handle.addEventListener('dragstart', (e) => {
+        draggedPanel = panel;
+        panel.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', panel.id);
+      });
+
+      handle.addEventListener('dragend', () => {
+        if (draggedPanel) {
+          draggedPanel.classList.remove('dragging');
+          draggedPanel = null;
+        }
+        container.querySelectorAll('.reorderable-panel').forEach(p => p.classList.remove('drag-over'));
+        guardarOrdenPaneles();
+      });
+    }
+
+    panel.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (draggedPanel && draggedPanel !== panel) {
+        panel.classList.add('drag-over');
+      }
+    });
+
+    panel.addEventListener('dragleave', (e) => {
+      if (!panel.contains(e.relatedTarget)) {
+        panel.classList.remove('drag-over');
+      }
+    });
+
+    panel.addEventListener('drop', (e) => {
+      e.preventDefault();
+      panel.classList.remove('drag-over');
+      if (!draggedPanel || draggedPanel === panel) return;
+
+      const rect = panel.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if (e.clientY < mid) {
+        container.insertBefore(draggedPanel, panel);
+      } else {
+        container.insertBefore(draggedPanel, panel.nextElementSibling);
+      }
+      animarPanelReordenado(draggedPanel);
+      guardarOrdenPaneles();
+    });
   });
 }
 
