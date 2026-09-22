@@ -360,6 +360,7 @@ let eqCounter     = 0;
 let fatCounter    = 0;
 let tapCounter    = 0;
 let cintCounter   = 0;
+let isLoadingSection = false;
 
 // ════════════════════════════════
 //  PERFIL DE USUARIO / ASESOR
@@ -483,6 +484,10 @@ function cargarSeccionesStorage() {
     if (raw) {
       const arr = JSON.parse(raw);
       if (Array.isArray(arr) && arr.length > 0) {
+        arr.forEach(sec => {
+          if (!Array.isArray(sec.equiposAdicionales)) sec.equiposAdicionales = [];
+          if (!sec.camposPersonalizados || typeof sec.camposPersonalizados !== 'object') sec.camposPersonalizados = {};
+        });
         secciones = arr;
         const act = parseInt(rawAct, 10);
         seccionActiva = (!isNaN(act) && act >= 0 && act < secciones.length) ? act : 0;
@@ -664,13 +669,17 @@ function updateThemeMenuUI(themeName) {
 
 function nuevaSeccion() {
   guardarFormActual();
-  secciones.push(crearSeccion());
+  const nueva = crearSeccion();
+  secciones.push(nueva);
+  seccionActiva = secciones.length - 1;
+  cargarSeccion(seccionActiva);
   renderSidebar();
-  cambiarSeccion(secciones.length - 1);
   guardarSeccionesStorage();
 }
 
 function cambiarSeccion(idx) {
+  if (idx < 0 || idx >= secciones.length) return;
+  if (idx === seccionActiva) return;
   guardarFormActual();
   seccionActiva = idx;
   cargarSeccion(idx);
@@ -682,6 +691,7 @@ function cambiarSeccion(idx) {
 //  GUARDAR FORM → OBJETO
 // ════════════════════════════════
 function guardarFormActual() {
+  if (isLoadingSection) return;
   if (secciones.length === 0) return;
   const s = secciones[seccionActiva];
   s.numero       = gv('seccionNumero').trim();
@@ -726,6 +736,7 @@ function guardarFormActual() {
 }
 
 function guardarCamposCustom(s) {
+  if (isLoadingSection) return;
   s.camposPersonalizados = s.camposPersonalizados || {};
 
   if (s.tipoGestion === 'cambio_equipo') {
@@ -771,6 +782,11 @@ function guardarCamposCustom(s) {
 }
 
 function capturarEquiposDOM() {
+  if (isLoadingSection) {
+    return (secciones[seccionActiva] && Array.isArray(secciones[seccionActiva].equiposAdicionales))
+      ? JSON.parse(JSON.stringify(secciones[seccionActiva].equiposAdicionales))
+      : [];
+  }
   const r = [];
   document.querySelectorAll('#equiposAdicionales .eq-block-adicional').forEach(b => {
     const modSel = b.querySelector('.input-mod');
@@ -786,84 +802,106 @@ function capturarEquiposDOM() {
 //  CARGAR OBJETO → FORM
 // ════════════════════════════════
 function cargarSeccion(idx) {
-  const s = secciones[idx];
-  g('seccionNumero').value = s.numero;
-  sv('tipoGestion', s.tipoGestion);
-  sv('nTicket',     s.nTicket);
-  sv('realizadoPor', s.realizadoPor || getStoredUserName());
-  sv('notasTexto',  s.notas);
+  if (idx < 0 || idx >= secciones.length) return;
+  isLoadingSection = true;
+  try {
+    const s = secciones[idx];
+    g('seccionNumero').value = s.numero || '';
+    sv('tipoGestion', s.tipoGestion);
+    sv('nTicket',     s.nTicket);
+    sv('realizadoPor', s.realizadoPor || getStoredUserName());
+    sv('notasTexto',  s.notas);
 
-  if (esEspecial(s.tipoGestion)) {
-    ocultarBloquesEstandar();
-    renderFormEspecial(s.tipoGestion, s.camposPersonalizados || {});
-    show('bloqueRealizadoPor'); show('actionRow');
-  } else {
-    hide('customFormArea'); g('customFormArea').innerHTML = '';
-    aplicarVisibilidad(s.tipoGestion);
+    // Limpiar siempre contenedores dinámicos al inicio para evitar cruce de datos
+    g('equiposAdicionales').innerHTML = '';
+    g('customFormArea').innerHTML = '';
 
-    sv('equipoActivado', s.equipoActivado);
-    sv('repetidorActivado', s.repetidorActivado);
-
-    resetTechBtns();
-    if (s.tecnologia) {
-      setTech(s.tecnologia, false);
+    if (esEspecial(s.tipoGestion)) {
+      sv('equipoActivado', '');
+      sv('repetidorActivado', '');
+      sv('modeloRepetidor', '');
+      sv('estado', '');
+      sv('observaciones', '');
+      ocultarBloquesEstandar();
+      renderFormEspecial(s.tipoGestion, s.camposPersonalizados || {});
+      show('bloqueRealizadoPor'); show('actionRow');
     } else {
-      populateModelosSelect(s.tipoGestion, '');
-    }
+      hide('customFormArea');
+      aplicarVisibilidad(s.tipoGestion);
 
-    // Restore modeloEquipo select & manual fallback
-    const storedModel = s.modeloEquipo || '';
-    const modSel = g('modeloEquipo');
-    const modMan = g('modeloManual');
-    if (modSel && storedModel) {
-      const isInList = Array.from(modSel.options).some(o => o.value === storedModel && o.value !== '' && o.value !== '__manual__');
-      if (isInList) {
-        modSel.value = storedModel;
-        if (modMan) modMan.classList.add('hidden');
+      sv('equipoActivado', s.equipoActivado);
+      sv('repetidorActivado', s.repetidorActivado);
+
+      resetTechBtns();
+      if (s.tecnologia) {
+        setTech(s.tecnologia, false);
       } else {
-        modSel.value = '__manual__';
-        if (modMan) { modMan.value = storedModel; modMan.classList.remove('hidden'); }
+        populateModelosSelect(s.tipoGestion, '');
+      }
+
+      // Restore modeloEquipo select & manual fallback
+      const storedModel = s.modeloEquipo || '';
+      const modSel = g('modeloEquipo');
+      const modMan = g('modeloManual');
+      if (modSel) {
+        if (storedModel) {
+          const isInList = Array.from(modSel.options).some(o => o.value === storedModel && o.value !== '' && o.value !== '__manual__');
+          if (isInList) {
+            modSel.value = storedModel;
+            if (modMan) { modMan.value = ''; modMan.classList.add('hidden'); }
+          } else {
+            modSel.value = '__manual__';
+            if (modMan) { modMan.value = storedModel; modMan.classList.remove('hidden'); }
+          }
+        } else {
+          modSel.value = '';
+          if (modMan) { modMan.value = ''; modMan.classList.add('hidden'); }
+        }
+      }
+
+      // Cargar modeloRepetidor select & manual text input
+      const knownRepMods = ['REPETIDOR ZXHN H3601P 180000528400 ZTE', 'ROUTER K562E-10 50087708 HUAWEI'];
+      const repModVal = s.modeloRepetidor || '';
+      const isManRep = repModVal !== '' && !knownRepMods.includes(repModVal);
+      if (g('modeloRepetidor')) sv('modeloRepetidor', isManRep ? '__manual__' : repModVal);
+      const manRep = g('modeloRepetidorManual');
+      if (manRep) {
+        manRep.value = isManRep ? repModVal : '';
+        if (isManRep) manRep.classList.remove('hidden');
+        else manRep.classList.add('hidden');
+      }
+
+      // Cargar estado select & manual text input
+      const knownEstados = ['ATENDIDA', 'ATENDIDA SIN CONFORMIDAD', 'PENDIENTE SE DERIVA A SISTEMAS', 'DENEGADA'];
+      const estVal = s.estado || '';
+      const isManEst = estVal !== '' && !knownEstados.includes(estVal);
+      if (g('estado')) sv('estado', isManEst ? '__manual__' : estVal);
+      const manEst = g('estadoManual');
+      if (manEst) {
+        manEst.value = isManEst ? estVal : '';
+        if (isManEst) manEst.classList.remove('hidden');
+        else manEst.classList.add('hidden');
+      }
+
+      sv('observaciones', s.observaciones);
+      g('equiposAdicionales').innerHTML = '';
+      if (Array.isArray(s.equiposAdicionales)) {
+        s.equiposAdicionales.forEach(eq => renderEqAdicional(eq.tipo, eq.uid, eq.equipo, eq.modelo));
       }
     }
 
-    // Cargar modeloRepetidor select & manual text input
-    const knownRepMods = ['REPETIDOR ZXHN H3601P 180000528400 ZTE', 'ROUTER K562E-10 50087708 HUAWEI'];
-    const repModVal = s.modeloRepetidor || '';
-    const isManRep = repModVal !== '' && !knownRepMods.includes(repModVal);
-    if (g('modeloRepetidor')) sv('modeloRepetidor', isManRep ? '__manual__' : repModVal);
-    const manRep = g('modeloRepetidorManual');
-    if (manRep) {
-      manRep.value = isManRep ? repModVal : '';
-      if (isManRep) manRep.classList.remove('hidden');
-      else manRep.classList.add('hidden');
+    actualizarBadge(s.tipoGestion);
+
+    if (s.plantillaGenerada) {
+      g('plantillaTexto').textContent = s.plantillaGenerada;
+      hide('previewEmpty'); show('previewContent'); g('btnCopy').disabled = false;
+    } else {
+      show('previewEmpty'); hide('previewContent'); g('btnCopy').disabled = true;
     }
-
-    // Cargar estado select & manual text input
-    const knownEstados = ['ATENDIDA', 'ATENDIDA SIN CONFORMIDAD', 'PENDIENTE SE DERIVA A SISTEMAS', 'DENEGADA'];
-    const estVal = s.estado || '';
-    const isManEst = estVal !== '' && !knownEstados.includes(estVal);
-    if (g('estado')) sv('estado', isManEst ? '__manual__' : estVal);
-    const manEst = g('estadoManual');
-    if (manEst) {
-      manEst.value = isManEst ? estVal : '';
-      if (isManEst) manEst.classList.remove('hidden');
-      else manEst.classList.add('hidden');
-    }
-
-    sv('observaciones', s.observaciones);
-    g('equiposAdicionales').innerHTML = '';
-    s.equiposAdicionales.forEach(eq => renderEqAdicional(eq.tipo, eq.uid, eq.equipo, eq.modelo));
+    hide('copyFeedback');
+  } finally {
+    isLoadingSection = false;
   }
-
-  actualizarBadge(s.tipoGestion);
-
-  if (s.plantillaGenerada) {
-    g('plantillaTexto').textContent = s.plantillaGenerada;
-    hide('previewEmpty'); show('previewContent'); g('btnCopy').disabled = false;
-  } else {
-    show('previewEmpty'); hide('previewContent'); g('btnCopy').disabled = true;
-  }
-  hide('copyFeedback');
 }
 
 function ocultarBloquesEstandar() {
@@ -877,6 +915,7 @@ function ocultarBloquesEstandar() {
 //  CAMBIO TIPO ── FIX: guardar tipoGestion antes de cambiar
 // ════════════════════════════════
 function onTipoChange() {
+  if (isLoadingSection) return;
   const tipo = gv('tipoGestion');
 
   // 1) Save datos del tipo ANTERIOR si era especial
@@ -1154,13 +1193,9 @@ function removeCambioItem(tipo, uid) {
 
   const el = container.querySelector(`[data-uid="${uid}"]`);
   if (el) {
-    el.style.transition = 'opacity 0.15s';
-    el.style.opacity = '0';
-    setTimeout(() => {
-      el.remove();
-      updateCambioItemLabels(tipo);
-      guardarFormActual();
-    }, 160);
+    el.remove();
+    updateCambioItemLabels(tipo);
+    guardarFormActual();
   }
 }
 
@@ -1250,6 +1285,7 @@ function addFATCintillo(fatId, value='') {
 function removeFATCintillo(_, cintId) { document.querySelector(`[data-cint-id="${cintId}"]`)?.remove(); }
 
 function guardarCintillosFTTH(s) {
+  if (isLoadingSection) return;
   s.camposPersonalizados = s.camposPersonalizados || {};
   s.camposPersonalizados.plano = gv('cesp_plano');
   const items = [];
@@ -1359,6 +1395,7 @@ function addTAPCintillo(tapId, value='') {
 function removeTAPCintillo(_, cintId) { document.querySelector(`[data-cint-id="${cintId}"]`)?.remove(); }
 
 function guardarCintillosHFC(s) {
+  if (isLoadingSection) return;
   s.camposPersonalizados = s.camposPersonalizados || {};
   s.camposPersonalizados.plano = gv('cesp_plano');
   const items = [];
@@ -1739,8 +1776,10 @@ function setTech(tech, save=true) {
   const man = g('modeloManual');
   if (man) { man.classList.add('hidden'); man.value = ''; }
 
-  if (save && secciones.length > 0) secciones[seccionActiva].tecnologia = tech;
-  sincronizarMarcaRepetidoresConOnt();
+  if (save) {
+    if (secciones.length > 0) secciones[seccionActiva].tecnologia = tech;
+    sincronizarMarcaRepetidoresConOnt();
+  }
 }
 
 function getOntBrand() {
@@ -1764,6 +1803,7 @@ function getOntBrand() {
 }
 
 function sincronizarMarcaRepetidoresConOnt() {
+  if (isLoadingSection) return;
   const brand = getOntBrand();
   if (!brand) return;
 
@@ -1970,14 +2010,20 @@ function renderEqAdicional(tipo, uid, equipo, modelo) {
 function quitarEqAdicional(uid) {
   const el = document.querySelector(`[data-uid="${uid}"]`);
   if (!el) return;
-  el.style.transition='opacity 0.15s'; el.style.opacity='0';
-  setTimeout(()=>{ el.remove(); if(secciones.length>0) secciones[seccionActiva].equiposAdicionales=secciones[seccionActiva].equiposAdicionales.filter(e=>e.uid!==uid); },160);
+  const secIdx = seccionActiva;
+  el.remove();
+  if (secciones.length > 0 && secciones[secIdx]) {
+    secciones[secIdx].equiposAdicionales = (secciones[secIdx].equiposAdicionales || []).filter(e => e.uid !== uid);
+  }
+  guardarFormActual();
+  generarPlantilla();
 }
 
 // ════════════════════════════════
 //  GENERAR PLANTILLA
 // ════════════════════════════════
 function generarPlantilla() {
+  if (isLoadingSection) return;
   guardarFormActual();
   const s = secciones[seccionActiva];
   if (!s.tipoGestion) return;
@@ -2581,6 +2627,7 @@ function showCodeFeedback(msg, isErr = false) {
 //  LIMPIEZA AUTOMÁTICA DE SERIALES & DETECCIÓN DE REPETIDOR
 // ════════════════════════════════
 function autoLimpiarYDetectarSerial(el, isRepeater = false, targetModelSelectId = null) {
+  if (isLoadingSection) return;
   let val = el.value;
   if (!val) return;
 
