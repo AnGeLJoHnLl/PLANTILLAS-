@@ -412,14 +412,16 @@ html[data-theme="cyan-dark"], [data-theme="cyan-dark"] {
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 15.5px; }
+html { font-size: 15.5px; height: 100%; }
 
 body {
   font-family: var(--font-ui);
   font-weight: 500;
   background: var(--bg-base);
   color: var(--text-primary);
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   display: flex; flex-direction: column;
   background-image:
     radial-gradient(ellipse 75% 45% at 15% -5%, var(--ambient-glow-1) 0%, transparent 65%),
@@ -440,20 +442,21 @@ body {
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-/* ════ BARRA DE NAVEGACIÓN RÁPIDA ════ */
 /* ════ BARRA DE NAVEGACIÓN RÁPIDA (CYBER & SMOOTH ANIMATIONS) ════ */
 .quick-links-bar {
-  background: linear-gradient(90deg, var(--ql-bg) 0%, rgba(255, 255, 255, 0.05) 50%, var(--ql-bg) 100%);
+  background: var(--ql-bg);
+  background-image: linear-gradient(90deg, var(--ql-bg) 0%, var(--header-bg-2) 50%, var(--ql-bg) 100%);
   background-size: 200% 100%;
-  animation: qlBgFlow 12s ease-in-out infinite alternate;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  animation: qlBgFlow 10s ease-in-out infinite alternate;
+  border-bottom: 1.5px solid rgba(0, 0, 0, 0.25);
   padding: 0 1.4rem;
-  height: 44px;
+  height: 42px;
   display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0; position: sticky; top: var(--header-h); z-index: 190;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
-  transition: background 0.3s ease;
+  flex-shrink: 0;
   position: relative;
+  z-index: 190;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: background 0.3s ease;
   overflow: visible;
 }
 
@@ -876,7 +879,13 @@ body {
 }
 
 /* ════ WRAPPER ════ */
-.app-wrapper { flex: 1; display: flex; min-height: 0; overflow: auto; }
+.app-wrapper {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  height: calc(100vh - var(--header-h) - 42px);
+  overflow: hidden;
+}
 
 /* ════ SIDEBAR ════ */
 .sidebar {
@@ -1859,7 +1868,8 @@ input:focus, textarea:focus, select:focus {
   .content-grid-composite { padding: 0.75rem; }
 }
 @media (max-width: 700px) {
-  .app-wrapper { flex-direction: column; }
+  body { height: auto; max-height: unset; overflow-y: auto; }
+  .app-wrapper { height: auto; overflow: visible; flex-direction: column; }
   .sidebar { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); max-height: 155px; }
   .sections-list { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; padding: 0.4rem 0.5rem; gap: 0.4rem; }
   .section-item { min-width: 140px; }
