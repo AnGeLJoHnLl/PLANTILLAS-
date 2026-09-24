@@ -15,13 +15,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
   <script>
     const THEME_PALETTES = {
-      'pink':         { c1: '#db2777', c2: '#be185d', c3: '#f472b6' },
+      'pink':         { c1: '#e11d48', c2: '#be123c', c3: '#f43f5e' },
       'pink-dark':    { c1: '#ec4899', c2: '#db2777', c3: '#f472b6' },
-      'purple-light': { c1: '#7c3aed', c2: '#6d28d9', c3: '#a78bfa' },
+      'purple-light': { c1: '#7c3aed', c2: '#6d28d9', c3: '#9333ea' },
       'purple-dark':  { c1: '#8b5cf6', c2: '#7c3aed', c3: '#a78bfa' },
-      'red-light':    { c1: '#e11d48', c2: '#be123c', c3: '#fb7185' },
+      'red-light':    { c1: '#dc2626', c2: '#b91c1c', c3: '#f43f5e' },
       'red-dark':     { c1: '#f43f5e', c2: '#e11d48', c3: '#fb7185' },
-      'cyan-light':   { c1: '#0891b2', c2: '#0e7490', c3: '#22d3ee' },
+      'cyan-light':   { c1: '#0284c7', c2: '#0369a1', c3: '#06b6d4' },
       'cyan-dark':    { c1: '#06b6d4', c2: '#0891b2', c3: '#22d3ee' },
       'purple':       { c1: '#4f46e5', c2: '#7c3aed', c3: '#06b6d4' }
     };
@@ -57,14 +57,20 @@
 
   <!-- ═══ MODAL DE AUTENTICACIÓN CIFRADA ═══ -->
   <div id="authModal" class="auth-modal-overlay">
-    <div class="auth-card">
-      <div class="auth-icon-wrap">
+    <div class="auth-card" id="authCard">
+      <div class="auth-icon-wrap" id="authIconWrap">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
           <path d="M7 11V7a5 5 0 0110 0v4"></path>
         </svg>
       </div>
-      <h2 class="auth-title">Acceso Protegido</h2>
+      <h2 class="auth-title" id="authTitle">Acceso Protegido</h2>
+      
+      <!-- Barra de progreso animada para carga -->
+      <div id="authLoadingBar" class="auth-loading-bar hidden">
+        <div class="auth-loading-progress" id="authLoadingProgress"></div>
+      </div>
+      <p id="authSubtitle" class="auth-subtitle hidden"></p>
       
       <form id="authForm" onsubmit="event.preventDefault(); intentarLogin();" class="auth-form-compact">
         <div class="auth-pass-wrap">
@@ -453,13 +459,13 @@
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/>
                   </svg>
-                  Generar Plantilla
+                  <span>Generar Plantilla</span>
                 </button>
-                <button type="button" class="btn-secondary" onclick="limpiarSeccionActual()">
+                <button type="button" id="btnLimpiar" class="btn-secondary btn-limpiar" onclick="limpiarSeccionActual()" title="Limpiar formulario de la SOT actual">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
                   </svg>
-                  Limpiar
+                  <span>Limpiar</span>
                 </button>
               </div>
             </form>

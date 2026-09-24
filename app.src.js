@@ -144,7 +144,9 @@ async function unlockWithPassword(pass, isRestore = false) {
     if (!isRestore) {
       await saveSessionPassword(decryptionPass);
     }
-    hideAuthModal();
+    if (isRestore) {
+      hideAuthModal(true);
+    }
     startInactivityTimer();
     return true;
   } catch (err) {
@@ -158,6 +160,13 @@ async function unlockWithPassword(pass, isRestore = false) {
 async function intentarLogin() {
   const passInput = document.getElementById('authPassInput');
   const btnSubmit = document.getElementById('btnAuthSubmit');
+  const authCard = document.getElementById('authCard');
+  const iconWrap = document.getElementById('authIconWrap');
+  const loadingBar = document.getElementById('authLoadingBar');
+  const loadingProgress = document.getElementById('authLoadingProgress');
+  const authSubtitle = document.getElementById('authSubtitle');
+  const authTitle = document.getElementById('authTitle');
+
   if (!passInput) return;
 
   const pass = passInput.value.trim();
@@ -168,17 +177,91 @@ async function intentarLogin() {
   }
 
   hideAuthError();
-  if (btnSubmit) { btnSubmit.disabled = true; btnSubmit.innerHTML = '<span>⏳ Verificando...</span>'; }
 
-  try {
-    const success = await unlockWithPassword(pass, false);
-    if (success) {
-      passInput.value = '';
-    } else {
-      passInput.select();
+  // Iniciar animación de verificación futurista
+  if (btnSubmit) {
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<span class="auth-spinner"></span><span>Verificando...</span>';
+  }
+  if (authCard) {
+    authCard.classList.remove('is-error', 'is-success');
+    authCard.classList.add('is-verifying');
+  }
+  if (loadingBar) {
+    loadingBar.classList.remove('hidden');
+  }
+  if (loadingProgress) {
+    loadingProgress.style.width = '20%';
+    setTimeout(() => {
+      if (authCard && authCard.classList.contains('is-verifying')) {
+        loadingProgress.style.width = '70%';
+      }
+    }, 150);
+  }
+  if (authSubtitle) {
+    authSubtitle.textContent = 'Descifrando claves de seguridad...';
+    authSubtitle.classList.remove('hidden');
+  }
+
+  // Pequeño delay de 280ms para una cadencia fluida y de alta tecnología
+  await new Promise(r => setTimeout(r, 280));
+
+  const success = await unlockWithPassword(pass, false);
+
+  if (success) {
+    if (loadingProgress) loadingProgress.style.width = '100%';
+    if (authCard) {
+      authCard.classList.remove('is-verifying');
+      authCard.classList.add('is-success');
     }
-  } finally {
-    if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.innerHTML = '<span>Ingresar</span>'; }
+    if (authTitle) {
+      authTitle.textContent = '¡Acceso Concedido!';
+    }
+    if (authSubtitle) {
+      authSubtitle.textContent = 'Módulo HITSS autenticado correctamente';
+    }
+    if (iconWrap) {
+      iconWrap.innerHTML = `
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" class="auth-pop-in">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 019.9-1"></path>
+        </svg>
+      `;
+    }
+    if (btnSubmit) {
+      btnSubmit.className = 'btn-auth-submit btn-auth-success';
+      btnSubmit.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Acceso Autorizado</span>
+      `;
+    }
+
+    passInput.value = '';
+
+    // Pausa visual para que el usuario aprecie el desbloqueo
+    await new Promise(r => setTimeout(r, 550));
+    hideAuthModal();
+  } else {
+    if (loadingProgress) {
+      loadingProgress.style.width = '100%';
+    }
+    if (authCard) {
+      authCard.classList.remove('is-verifying');
+      authCard.classList.add('is-error');
+      setTimeout(() => authCard.classList.remove('is-error'), 600);
+    }
+    if (loadingBar) loadingBar.classList.add('hidden');
+    if (authSubtitle) authSubtitle.classList.add('hidden');
+    if (loadingProgress) loadingProgress.style.width = '0%';
+
+    if (btnSubmit) {
+      btnSubmit.disabled = false;
+      btnSubmit.className = 'btn-auth-submit';
+      btnSubmit.innerHTML = '<span>Ingresar</span>';
+    }
+    passInput.select();
   }
 }
 
@@ -194,14 +277,59 @@ function hideAuthError() {
   if (fb) fb.classList.add('hidden');
 }
 
-function hideAuthModal() {
+function resetAuthModalUI() {
+  const authCard = document.getElementById('authCard');
+  const iconWrap = document.getElementById('authIconWrap');
+  const loadingBar = document.getElementById('authLoadingBar');
+  const loadingProgress = document.getElementById('authLoadingProgress');
+  const authSubtitle = document.getElementById('authSubtitle');
+  const authTitle = document.getElementById('authTitle');
+  const btnSubmit = document.getElementById('btnAuthSubmit');
+
+  if (authCard) authCard.classList.remove('is-verifying', 'is-success', 'is-error');
+  if (loadingBar) loadingBar.classList.add('hidden');
+  if (loadingProgress) loadingProgress.style.width = '0%';
+  if (authSubtitle) {
+    authSubtitle.textContent = '';
+    authSubtitle.classList.add('hidden');
+  }
+  if (authTitle) authTitle.textContent = 'Acceso Protegido';
+  if (iconWrap) {
+    iconWrap.innerHTML = `
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0110 0v4"></path>
+      </svg>
+    `;
+  }
+  if (btnSubmit) {
+    btnSubmit.disabled = false;
+    btnSubmit.className = 'btn-auth-submit';
+    btnSubmit.innerHTML = '<span>Ingresar</span>';
+  }
+}
+
+function hideAuthModal(immediate = false) {
   const modal = document.getElementById('authModal');
-  if (modal) modal.classList.add('hidden');
+  if (!modal) return;
+  if (immediate) {
+    modal.classList.add('hidden');
+    modal.classList.remove('auth-modal-closing');
+    resetAuthModalUI();
+    return;
+  }
+  modal.classList.add('auth-modal-closing');
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    modal.classList.remove('auth-modal-closing');
+    resetAuthModalUI();
+  }, 350);
 }
 
 function showAuthModal(noticeMsg) {
+  resetAuthModalUI();
   const modal = document.getElementById('authModal');
-  if (modal) modal.classList.remove('hidden');
+  if (modal) modal.classList.remove('hidden', 'auth-modal-closing');
   if (noticeMsg) showAuthError(noticeMsg);
   const passInp = document.getElementById('authPassInput');
   if (passInp) { passInp.value = ''; passInp.focus(); }
