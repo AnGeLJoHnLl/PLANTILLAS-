@@ -441,47 +441,228 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 /* ════ BARRA DE NAVEGACIÓN RÁPIDA ════ */
+/* ════ BARRA DE NAVEGACIÓN RÁPIDA (CYBER & SMOOTH ANIMATIONS) ════ */
 .quick-links-bar {
-  background: var(--ql-bg);
-  border-bottom: 1px solid rgba(0,0,0,0.08);
+  background: linear-gradient(90deg, var(--ql-bg) 0%, rgba(255, 255, 255, 0.05) 50%, var(--ql-bg) 100%);
+  background-size: 200% 100%;
+  animation: qlBgFlow 12s ease-in-out infinite alternate;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 0 1.4rem;
-  height: 42px;
+  height: 44px;
   display: flex; align-items: center; justify-content: space-between;
   flex-shrink: 0; position: sticky; top: var(--header-h); z-index: 190;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
   transition: background 0.3s ease;
+  position: relative;
+  overflow: visible;
 }
+
+/* Rayo láser dinámico continuo que recorre el borde inferior de la barra */
+.quick-links-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0) 10%,
+    var(--accent2) 35%,
+    rgba(255, 255, 255, 0.95) 50%,
+    var(--accent) 65%,
+    rgba(255, 255, 255, 0) 90%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: qlLaserBeam 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+@keyframes qlLaserBeam {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes qlBgFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
 .ql-items {
-  display: flex; align-items: center; gap: 0.35rem;
+  display: flex; align-items: center; gap: 0.4rem;
   flex-wrap: nowrap; overflow-x: auto;
   scrollbar-width: thin;
+  padding: 4px 0;
+  scroll-behavior: smooth;
 }
+
+/* Cascada de entrada suave para los enlaces */
+.ql-items > * {
+  animation: qlItemFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.ql-items > *:nth-child(1)  { animation-delay: 0.02s; }
+.ql-items > *:nth-child(2)  { animation-delay: 0.04s; }
+.ql-items > *:nth-child(3)  { animation-delay: 0.06s; }
+.ql-items > *:nth-child(4)  { animation-delay: 0.08s; }
+.ql-items > *:nth-child(5)  { animation-delay: 0.10s; }
+.ql-items > *:nth-child(6)  { animation-delay: 0.12s; }
+.ql-items > *:nth-child(7)  { animation-delay: 0.14s; }
+.ql-items > *:nth-child(8)  { animation-delay: 0.16s; }
+.ql-items > *:nth-child(9)  { animation-delay: 0.18s; }
+.ql-items > *:nth-child(10) { animation-delay: 0.20s; }
+.ql-items > *:nth-child(11) { animation-delay: 0.22s; }
+.ql-items > *:nth-child(12) { animation-delay: 0.24s; }
+.ql-items > *:nth-child(13) { animation-delay: 0.26s; }
+.ql-items > *:nth-child(14) { animation-delay: 0.28s; }
+.ql-items > *:nth-child(15) { animation-delay: 0.30s; }
+.ql-items > *:nth-child(16) { animation-delay: 0.32s; }
+
+@keyframes qlItemFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .ql-btn {
   display: inline-flex; align-items: center;
-  background: transparent; border: none;
-  padding: 0.3rem 0.65rem;
-  cursor: pointer; transition: all 0.18s ease;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.32rem 0.72rem;
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              background 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.22s ease,
+              color 0.2s ease;
   font-family: 'Inter', sans-serif; user-select: none;
-  text-decoration: none; color: rgba(255,255,255,0.85);
+  text-decoration: none; color: rgba(255, 255, 255, 0.88);
   white-space: nowrap; flex-shrink: 0;
-  border-radius: 14px;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
 }
+
+/* Efecto de destello / barrido de luz al pasar el cursor */
+.ql-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(25deg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ql-btn:hover::before {
+  animation: qlShimmerSweep 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes qlShimmerSweep {
+  0% {
+    left: -75%;
+    opacity: 1;
+  }
+  100% {
+    left: 140%;
+    opacity: 0;
+  }
+}
+
 .ql-btn:hover {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.4);
   color: #ffffff;
+  transform: translateY(-2.5px) scale(1.06);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), 0 0 10px rgba(255, 255, 255, 0.2);
 }
+
+.ql-btn:active {
+  transform: translateY(0.5px) scale(0.96);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
 .ql-num {
-  font-size: 0.76rem; font-weight: 700; color: rgba(255,255,255,0.9);
-  letter-spacing: 0.02em;
+  font-size: 0.76rem; font-weight: 750; color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.03em;
+  transition: color 0.2s ease, letter-spacing 0.2s ease;
 }
+
+.ql-btn:hover .ql-num {
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+/* 🌟 BOTÓN DESTACADO "148" (CLARO 360) CON PULSO Y RESPLANDOR NEÓN */
 #ql-148 {
   background: #ffffff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22), 0 0 12px var(--accent-glow);
+  animation: qlPillBreath 3.2s ease-in-out infinite;
 }
+
 #ql-148 .ql-num {
   color: var(--accent);
-  font-weight: 800;
+  font-weight: 900;
+  font-size: 0.8rem;
 }
+
+#ql-148:hover {
+  transform: translateY(-3px) scale(1.1) !important;
+  background: #ffffff !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 22px rgba(255, 255, 255, 0.9), 0 0 14px var(--accent) !important;
+}
+
+#ql-148:active {
+  transform: translateY(0) scale(0.98) !important;
+}
+
+@keyframes qlPillBreath {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 8px var(--accent-glow);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 18px rgba(255, 255, 255, 0.7), 0 0 12px var(--accent);
+    transform: scale(1.05);
+  }
+}
+
+/* ✨ ESTADO AL COPIAR (FEEDBACK POP) */
+.ql-btn.ql-copied {
+  background: #22c55e !important;
+  border-color: #22c55e !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 18px rgba(34, 197, 94, 0.75), 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  animation: qlCopiedPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ql-btn.ql-copied .ql-num {
+  color: #ffffff !important;
+  font-weight: 900;
+}
+
+@keyframes qlCopiedPop {
+  0% { transform: scale(0.9); }
+  50% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
 .ql-feedback {
   font-size: 0.72rem; font-weight: 800; color: #22c55e;
   animation: slideIn 0.2s ease; white-space: nowrap; margin-left: 0.5rem;
@@ -497,7 +678,7 @@ body {
   background: #ffffff;
   color: var(--accent);
   border: 1px solid var(--border);
-  padding: 4px 12px;
+  padding: 5px 13px;
   border-radius: 20px;
   cursor: pointer;
   display: flex;
@@ -505,12 +686,21 @@ body {
   gap: 6px;
   font-size: 0.78rem;
   font-weight: 800;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
 }
 .btn-theme-dropdown:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 5px 16px rgba(0,0,0,0.22), 0 0 12px var(--accent-glow);
+}
+.btn-theme-dropdown:hover .theme-btn-icon {
+  animation: paletteWiggle 0.55s ease-in-out infinite alternate;
+}
+@keyframes paletteWiggle {
+  0% { transform: rotate(-12deg) scale(1.1); }
+  100% { transform: rotate(12deg) scale(1.2); }
 }
 .theme-caret {
   font-size: 0.72rem;
