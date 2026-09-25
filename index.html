@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" id="appFavicon" />
-  <link rel="stylesheet" href="styles.css?v=20260925_gengar" />
+  <link rel="stylesheet" href="styles.css?v=20260925_squirtle" />
   <!-- FontAwesome & Cropper.js for OCR -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
@@ -145,6 +145,38 @@
         ghost.style.top = `${rect.top}px`;
         document.body.appendChild(ghost);
         setTimeout(() => ghost.remove(), 950);
+      }
+    }
+
+    function squirtleCoolJump() {
+      const mascot = document.getElementById('cyanMascot');
+      if (!mascot) return;
+      mascot.classList.add('is-cool');
+      setTimeout(() => mascot.classList.remove('is-cool'), 700);
+
+      const bubble = document.getElementById('cyanMascotBubble');
+      if (bubble) {
+        const msgs = ['¡Vamo a calmarno! 😎', '¡Squirtle Squad! 🕶️', '¡Todo bajo control! 🌊', '¡Tranqui, yo me encargo! 💧', '¡Squir-tle! 🫧'];
+        bubble.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+        bubble.style.opacity = '1';
+        bubble.style.transform = 'translateX(-50%) translateY(0) scale(1)';
+        setTimeout(() => {
+          bubble.style.opacity = '';
+          bubble.style.transform = '';
+        }, 1800);
+      }
+
+      const rect = mascot.getBoundingClientRect();
+      for (let i = 0; i < 4; i++) {
+        const drop = document.createElement('div');
+        drop.className = 'mascot-water-particle';
+        drop.textContent = ['🌊', '🕶️', '💧', '🫧', '✨'][Math.floor(Math.random() * 5)];
+        const tx = (Math.random() - 0.5) * 60;
+        drop.style.setProperty('--tx', `${tx}px`);
+        drop.style.left = `${rect.left + rect.width / 2 - 10 + (i - 1.5) * 12}px`;
+        drop.style.top = `${rect.top}px`;
+        document.body.appendChild(drop);
+        setTimeout(() => drop.remove(), 950);
       }
     }
   </script>
@@ -853,10 +885,19 @@
     </div>
   </div>
 
+  <!-- ═══ MASCOTA DECORATIVA EXCLUSIVA TEMA CIAN (SQUIRTLE) ═══ -->
+  <div class="cyan-mascot" id="cyanMascot" onclick="squirtleCoolJump()" title="¡Vamo a calmarno! Clic para interactuar 😎">
+    <div class="mascot-bubble cyan-bubble" id="cyanMascotBubble">¡Vamo a calmarno! 😎</div>
+    <div class="mascot-walker cyan-walker">
+      <img src="squirtle.png" alt="Squirtle" class="mascot-img cyan-img" />
+      <div class="mascot-shadow cyan-shadow"></div>
+    </div>
+  </div>
+
   <!-- Scripts -->
-  <script src="app.js?v=20260925_gengar"></script>
+  <script src="app.js?v=20260925_squirtle"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-  <script src="ocr-extension.js?v=20260925_gengar"></script>
+  <script src="ocr-extension.js?v=20260925_squirtle"></script>
 </body>
 </html>

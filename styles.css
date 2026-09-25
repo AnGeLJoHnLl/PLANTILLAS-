@@ -2771,6 +2771,193 @@ html[data-theme="purple-dark"] .purple-mascot,
   }
 }
 
+/* ════ MASCOTA DECORATIVA EXCLUSIVA TEMA CIAN (SQUIRTLE) ════ */
+.cyan-mascot {
+  display: none;
+  position: fixed;
+  bottom: 12px;
+  left: 18px;
+  width: 85px;
+  z-index: 999;
+  cursor: pointer;
+  user-select: none;
+  animation: mascotPatrolCyan 26s linear infinite;
+}
+
+/* Solo visible en los temas cian (claro y oscuro) */
+html[data-theme="cyan-light"] .cyan-mascot,
+html[data-theme="cyan-dark"] .cyan-mascot,
+[data-theme="cyan-light"] .cyan-mascot,
+[data-theme="cyan-dark"] .cyan-mascot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Pausa suave de toda la animación al pasar el cursor para poder interactuar */
+.cyan-mascot:hover,
+.cyan-mascot:hover .cyan-walker,
+.cyan-mascot:hover .cyan-img,
+.cyan-mascot:hover .cyan-shadow {
+  animation-play-state: paused;
+}
+
+.cyan-walker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: squirtleTurn 26s infinite;
+  transform-origin: center center;
+}
+
+.cyan-img {
+  width: 82px;
+  height: 88px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(6, 182, 212, 0.45));
+  animation: squirtleFloat 1.25s ease-in-out infinite;
+  transition: filter 0.25s ease;
+}
+
+.cyan-mascot:hover .cyan-img {
+  filter: drop-shadow(0 10px 22px rgba(6, 182, 212, 0.75));
+}
+
+.cyan-shadow {
+  width: 64px;
+  height: 9px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.28) 0%, transparent 75%);
+  border-radius: 50%;
+  margin-top: -3px;
+  animation: squirtleShadow 1.25s ease-in-out infinite;
+}
+
+.cyan-bubble {
+  color: #0284c7 !important;
+  border-color: #38bdf8 !important;
+}
+
+.cyan-mascot:hover .mascot-bubble {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* ── Patrullaje horizontal de Squirtle de lado a lado ── */
+@keyframes mascotPatrolCyan {
+  0%, 2% {
+    transform: translateX(0);
+  }
+  47%, 52% {
+    transform: translateX(calc(100vw - 120px));
+  }
+  97%, 100% {
+    transform: translateX(0);
+  }
+}
+
+/* ── Giro para mirar hacia donde camina (Squirtle mira a la derecha por defecto) ── */
+@keyframes squirtleTurn {
+  0%, 49.5% {
+    transform: scaleX(1);
+  }
+  49.51%, 99.5% {
+    transform: scaleX(-1);
+  }
+  99.51%, 100% {
+    transform: scaleX(1);
+  }
+}
+
+/* ── Animación de caminata cool con balanceo confiado ── */
+@keyframes squirtleFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-8px) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(0) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+
+@keyframes squirtleShadow {
+  0%, 50%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  25%, 75% {
+    transform: scale(0.72);
+    opacity: 0.45;
+  }
+}
+
+/* Salto cool al hacer clic */
+.cyan-mascot.is-cool .cyan-img {
+  animation: squirtleCool 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+@keyframes squirtleCool {
+  0%   { transform: translateY(0) scale(1) rotate(0deg); }
+  25%  { transform: translateY(-22px) scale(1.18) rotate(8deg); }
+  50%  { transform: translateY(-30px) scale(1.14) rotate(-6deg); }
+  75%  { transform: translateY(-8px) scale(1.06) rotate(2deg); }
+  100% { transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+/* Partículas acuáticas al hacer clic */
+.mascot-water-particle {
+  --tx: 15px;
+  position: fixed;
+  font-size: 1.25rem;
+  pointer-events: none;
+  animation: floatWater 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  z-index: 1001;
+}
+
+@keyframes floatWater {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), -65px) scale(1.4);
+  }
+}
+
+/* Adaptación móvil para Squirtle */
+@media (max-width: 768px) {
+  .cyan-mascot {
+    bottom: 8px;
+    left: 10px;
+    width: 68px;
+  }
+  .cyan-img {
+    width: 66px;
+    height: 72px;
+  }
+  .cyan-shadow {
+    width: 50px;
+    height: 8px;
+  }
+  @keyframes mascotPatrolCyan {
+    0%, 2% {
+      transform: translateX(0);
+    }
+    47%, 52% {
+      transform: translateX(calc(100vw - 86px));
+    }
+    97%, 100% {
+      transform: translateX(0);
+    }
+  }
+}
+
+
 
 
 
