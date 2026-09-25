@@ -7,7 +7,7 @@
 // ════════════════════════════════
 const MODELOS = {
   hfc:  ['CGA2121 CM','F@ST3686 CM','FAST3686V2.2 CM','FAST3890V3 CM','Infinity601 CM','TG2482AL CM','TG3442A CM'],
-  ftth: ['HG8145V5','F6600PV9.0.12','F680V6.0.08','HG8145X6-10','HG8145X6-13','HG8245W5-6T'],
+  ftth: ['HG8145V5','F6600PV9.0.12','F680V6.0.08','HG8145X6-10','HG8145X6-13','HG8245W5-6T','F@ST5670v2'],
 };
 
 // Modelos específicos ONT FTTH por marca
