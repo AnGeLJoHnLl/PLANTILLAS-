@@ -2394,4 +2394,191 @@ html[data-theme="pink-dark"] .pink-mascot,
   }
 }
 
+/* ════ MASCOTA DECORATIVA EXCLUSIVA TEMA ROJO (BLAZIKEN) ════ */
+.red-mascot {
+  display: none;
+  position: fixed;
+  bottom: 12px;
+  left: 18px;
+  width: 80px;
+  z-index: 999;
+  cursor: pointer;
+  user-select: none;
+  animation: mascotPatrolRed 26s linear infinite;
+}
+
+/* Solo visible en los temas rojo (claro y oscuro) */
+html[data-theme="red-light"] .red-mascot,
+html[data-theme="red-dark"] .red-mascot,
+[data-theme="red-light"] .red-mascot,
+[data-theme="red-dark"] .red-mascot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Pausa suave de toda la animación al pasar el cursor para poder interactuar */
+.red-mascot:hover,
+.red-mascot:hover .red-walker,
+.red-mascot:hover .red-img,
+.red-mascot:hover .red-shadow {
+  animation-play-state: paused;
+}
+
+.red-walker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: blazikenTurn 26s infinite;
+  transform-origin: center center;
+}
+
+.red-img {
+  width: 72px;
+  height: 95px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(239, 68, 68, 0.45));
+  animation: blazikenFloat 1.3s ease-in-out infinite;
+  transition: filter 0.25s ease;
+}
+
+.red-mascot:hover .red-img {
+  filter: drop-shadow(0 10px 22px rgba(239, 68, 68, 0.75));
+}
+
+.red-shadow {
+  width: 58px;
+  height: 9px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.28) 0%, transparent 75%);
+  border-radius: 50%;
+  margin-top: -3px;
+  animation: blazikenShadow 1.3s ease-in-out infinite;
+}
+
+.red-bubble {
+  color: #dc2626 !important;
+  border-color: #f87171 !important;
+}
+
+.red-mascot:hover .mascot-bubble {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* ── Patrullaje horizontal de Blaziken de lado a lado ── */
+@keyframes mascotPatrolRed {
+  0%, 2% {
+    transform: translateX(0);
+  }
+  47%, 52% {
+    transform: translateX(calc(100vw - 116px));
+  }
+  97%, 100% {
+    transform: translateX(0);
+  }
+}
+
+/* ── Giro para mirar hacia donde camina (Blaziken mira a la derecha por defecto) ── */
+@keyframes blazikenTurn {
+  0%, 49.5% {
+    transform: scaleX(1);
+  }
+  49.51%, 99.5% {
+    transform: scaleX(-1);
+  }
+  99.51%, 100% {
+    transform: scaleX(1);
+  }
+}
+
+/* ── Animación de flotación y postura dinámica de combate ── */
+@keyframes blazikenFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-9px) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(0) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-9px) rotate(2deg);
+  }
+}
+
+@keyframes blazikenShadow {
+  0%, 50%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  25%, 75% {
+    transform: scale(0.68);
+    opacity: 0.4;
+  }
+}
+
+/* Salto de acción al hacer clic */
+.red-mascot.is-action .red-img {
+  animation: blazikenKick 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+@keyframes blazikenKick {
+  0%   { transform: translateY(0) scale(1) rotate(0deg); }
+  25%  { transform: translateY(-24px) scale(1.18) rotate(10deg); }
+  50%  { transform: translateY(-32px) scale(1.15) rotate(-6deg); }
+  75%  { transform: translateY(-8px) scale(1.05) rotate(2deg); }
+  100% { transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+/* Partículas de fuego flotantes al hacer clic */
+.mascot-flame-particle {
+  --tx: 15px;
+  position: fixed;
+  font-size: 1.25rem;
+  pointer-events: none;
+  animation: floatFlame 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  z-index: 1001;
+}
+
+@keyframes floatFlame {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), -65px) scale(1.4);
+  }
+}
+
+/* Adaptación móvil para Blaziken */
+@media (max-width: 768px) {
+  .red-mascot {
+    bottom: 8px;
+    left: 10px;
+    width: 65px;
+  }
+  .red-img {
+    width: 58px;
+    height: 76px;
+  }
+  .red-shadow {
+    width: 48px;
+    height: 8px;
+  }
+  @keyframes mascotPatrolRed {
+    0%, 2% {
+      transform: translateX(0);
+    }
+    47%, 52% {
+      transform: translateX(calc(100vw - 85px));
+    }
+    97%, 100% {
+      transform: translateX(0);
+    }
+  }
+}
+
+
 
