@@ -2191,3 +2191,135 @@ input:focus, textarea:focus, select:focus {
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
+/* ════ MASCOTA DECORATIVA EXCLUSIVA TEMA ROSA (BLISSEY) ════ */
+.pink-mascot {
+  display: none;
+  position: fixed;
+  bottom: 18px;
+  right: 24px;
+  z-index: 999;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.25s ease;
+}
+
+/* Solo visible en los temas rosa (claro y oscuro) */
+html[data-theme="pink"] .pink-mascot,
+html[data-theme="pink-dark"] .pink-mascot,
+[data-theme="pink"] .pink-mascot,
+[data-theme="pink-dark"] .pink-mascot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mascot-img {
+  width: 62px;
+  height: 62px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 6px 12px rgba(225, 29, 72, 0.35));
+  animation: blisseyFloat 3s ease-in-out infinite;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mascot-shadow {
+  width: 46px;
+  height: 8px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.22) 0%, transparent 75%);
+  border-radius: 50%;
+  margin-top: -3px;
+  animation: blisseyShadow 3s ease-in-out infinite;
+}
+
+.mascot-bubble {
+  position: absolute;
+  top: -28px;
+  background: #ffffff;
+  color: #e11d48;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.16);
+  border: 1px solid #f472b6;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(6px) scale(0.85);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.pink-mascot:hover .mascot-bubble {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.pink-mascot:hover .mascot-img {
+  transform: scale(1.14) rotate(-3deg);
+  filter: drop-shadow(0 8px 16px rgba(225, 29, 72, 0.5));
+}
+
+/* Animación de flotación y balanceo suave */
+@keyframes blisseyFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-8px) rotate(3deg);
+  }
+  60% {
+    transform: translateY(-3px) rotate(-2deg);
+  }
+}
+
+@keyframes blisseyShadow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  30% {
+    transform: scale(0.72);
+    opacity: 0.4;
+  }
+  60% {
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+}
+
+/* Salto feliz e interactivo al hacer clic */
+.pink-mascot.is-happy .mascot-img {
+  animation: blisseyHappy 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes blisseyHappy {
+  0% { transform: scale(1); }
+  25% { transform: translateY(-18px) scale(1.2) rotate(-8deg); }
+  50% { transform: translateY(-24px) scale(1.15) rotate(8deg); }
+  75% { transform: translateY(-6px) scale(1.08) rotate(-4deg); }
+  100% { transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+/* Partículas de corazones flotantes al hacer clic */
+.mascot-heart-particle {
+  --tx: 15px;
+  position: fixed;
+  font-size: 1.15rem;
+  pointer-events: none;
+  animation: floatHeart 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  z-index: 1000;
+}
+
+@keyframes floatHeart {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), -55px) scale(1.35);
+  }
+}
+

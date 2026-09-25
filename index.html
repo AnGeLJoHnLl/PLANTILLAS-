@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" id="appFavicon" />
-  <link rel="stylesheet" href="styles.css?v=20260925_fast5670" />
+  <link rel="stylesheet" href="styles.css?v=20260925_blissey" />
   <!-- FontAwesome & Cropper.js for OCR -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
@@ -50,6 +50,38 @@
       }
       const menu = document.getElementById('themeDropdownMenu');
       if (menu) menu.classList.add('hidden');
+    }
+
+    function mascotHappyJump() {
+      const mascot = document.getElementById('pinkMascot');
+      if (!mascot) return;
+      mascot.classList.add('is-happy');
+      setTimeout(() => mascot.classList.remove('is-happy'), 700);
+
+      const bubble = document.getElementById('mascotBubble');
+      if (bubble) {
+        const msgs = ['¡Feliz día! 💕', '¡Tú puedes! ✨', '¡Ánimo! 🌸', '¡Chan-sey! 💖', '¡A darle con todo! ⭐'];
+        bubble.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+        bubble.style.opacity = '1';
+        bubble.style.transform = 'translateY(0) scale(1)';
+        setTimeout(() => {
+          bubble.style.opacity = '';
+          bubble.style.transform = '';
+        }, 1800);
+      }
+
+      const rect = mascot.getBoundingClientRect();
+      for (let i = 0; i < 4; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'mascot-heart-particle';
+        heart.textContent = ['💖', '✨', '🌸', '💕'][Math.floor(Math.random() * 4)];
+        const tx = (Math.random() - 0.5) * 60;
+        heart.style.setProperty('--tx', `${tx}px`);
+        heart.style.left = `${rect.left + rect.width / 2 - 10 + (i - 1.5) * 12}px`;
+        heart.style.top = `${rect.top}px`;
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 950);
+      }
     }
   </script>
 </head>
@@ -730,10 +762,17 @@
     <p>Hecho por Angel Llamacponcca</p>
   </footer>
 
+  <!-- ═══ MASCOTA DECORATIVA EXCLUSIVA TEMA ROSA (BLISSEY) ═══ -->
+  <div class="pink-mascot" id="pinkMascot" onclick="mascotHappyJump()" title="¡Hola! Clic para interactuar 💕">
+    <div class="mascot-bubble" id="mascotBubble">¡Feliz día! 💕</div>
+    <img src="blissey.png" alt="Blissey" class="mascot-img" />
+    <div class="mascot-shadow"></div>
+  </div>
+
   <!-- Scripts -->
-  <script src="app.js?v=20260925_fast5670"></script>
+  <script src="app.js?v=20260925_blissey"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-  <script src="ocr-extension.js?v=20260925_fast5670"></script>
+  <script src="ocr-extension.js?v=20260925_blissey"></script>
 </body>
 </html>
