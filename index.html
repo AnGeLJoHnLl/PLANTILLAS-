@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" id="appFavicon" />
-  <link rel="stylesheet" href="styles.css?v=20260925_blaziken" />
+  <link rel="stylesheet" href="styles.css?v=20260925_gengar" />
   <!-- FontAwesome & Cropper.js for OCR -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
@@ -113,6 +113,38 @@
         flame.style.top = `${rect.top}px`;
         document.body.appendChild(flame);
         setTimeout(() => flame.remove(), 950);
+      }
+    }
+
+    function gengarSpookyJump() {
+      const mascot = document.getElementById('purpleMascot');
+      if (!mascot) return;
+      mascot.classList.add('is-spooky');
+      setTimeout(() => mascot.classList.remove('is-spooky'), 700);
+
+      const bubble = document.getElementById('purpleMascotBubble');
+      if (bubble) {
+        const msgs = ['¡Ge-ge-ge! 👻', '¡Sombra lista! 😈', '¡Modo fantasma! 💜', '¡Nadie nos para! 🔮', '¡Gen-gar! ✨'];
+        bubble.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+        bubble.style.opacity = '1';
+        bubble.style.transform = 'translateX(-50%) translateY(0) scale(1)';
+        setTimeout(() => {
+          bubble.style.opacity = '';
+          bubble.style.transform = '';
+        }, 1800);
+      }
+
+      const rect = mascot.getBoundingClientRect();
+      for (let i = 0; i < 4; i++) {
+        const ghost = document.createElement('div');
+        ghost.className = 'mascot-ghost-particle';
+        ghost.textContent = ['👻', '😈', '💜', '🔮', '✨'][Math.floor(Math.random() * 5)];
+        const tx = (Math.random() - 0.5) * 60;
+        ghost.style.setProperty('--tx', `${tx}px`);
+        ghost.style.left = `${rect.left + rect.width / 2 - 10 + (i - 1.5) * 12}px`;
+        ghost.style.top = `${rect.top}px`;
+        document.body.appendChild(ghost);
+        setTimeout(() => ghost.remove(), 950);
       }
     }
   </script>
@@ -812,10 +844,19 @@
     </div>
   </div>
 
+  <!-- ═══ MASCOTA DECORATIVA EXCLUSIVA TEMA MORADO (GENGAR) ═══ -->
+  <div class="purple-mascot" id="purpleMascot" onclick="gengarSpookyJump()" title="¡Buh! Clic para interactuar 👻">
+    <div class="mascot-bubble purple-bubble" id="purpleMascotBubble">¡Ge-ge-ge! 👻</div>
+    <div class="mascot-walker purple-walker">
+      <img src="gengar.png" alt="Gengar" class="mascot-img purple-img" />
+      <div class="mascot-shadow purple-shadow"></div>
+    </div>
+  </div>
+
   <!-- Scripts -->
-  <script src="app.js?v=20260925_blaziken"></script>
+  <script src="app.js?v=20260925_gengar"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-  <script src="ocr-extension.js?v=20260925_blaziken"></script>
+  <script src="ocr-extension.js?v=20260925_gengar"></script>
 </body>
 </html>
