@@ -1786,9 +1786,11 @@ input:focus, textarea:focus, select:focus {
   animation: fadeUp 0.22s cubic-bezier(0.16,1,0.3,1);
 }
 
-/* Respeta a quienes prefieren menos movimiento */
+/* Respeta a quienes prefieren menos movimiento en la interfaz (excluyendo mascotas decorativas) */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *:not(.pink-mascot):not(.red-mascot):not(.purple-mascot):not(.cyan-mascot):not([class*="mascot-"]):not([class*="-walker"]):not([class*="-img"]):not([class*="-shadow"]):not([class*="-bubble"]),
+  *:not(.pink-mascot):not(.red-mascot):not(.purple-mascot):not(.cyan-mascot):not([class*="mascot-"]):not([class*="-walker"]):not([class*="-img"]):not([class*="-shadow"]):not([class*="-bubble"])::before,
+  *:not(.pink-mascot):not(.red-mascot):not(.purple-mascot):not(.cyan-mascot):not([class*="mascot-"]):not([class*="-walker"]):not([class*="-img"]):not([class*="-shadow"]):not([class*="-bubble"])::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
