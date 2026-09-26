@@ -2012,9 +2012,9 @@ input:focus, textarea:focus, select:focus {
 .auth-card {
   width: 100%; max-width: 370px;
   background: #ffffff !important;
-  border: 1.5px solid rgba(168, 85, 247, 0.35) !important;
+  border: 1.5px solid var(--accent, rgba(225, 29, 72, 0.35)) !important;
   border-radius: 20px; padding: 2.2rem 1.8rem;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08), 0 0 35px rgba(168, 85, 247, 0.15) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08), 0 0 35px var(--accent-glow, rgba(225, 29, 72, 0.18)) !important;
   display: flex; flex-direction: column; align-items: center; text-align: center;
   animation: fadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
@@ -2024,7 +2024,7 @@ input:focus, textarea:focus, select:focus {
 
 /* Card states */
 .auth-card.is-verifying {
-  box-shadow: 0 20px 50px rgba(168, 85, 247, 0.25) !important;
+  box-shadow: 0 20px 50px var(--accent-glow, rgba(225, 29, 72, 0.25)) !important;
 }
 .auth-card.is-success {
   border-color: #22c55e !important;
@@ -2074,8 +2074,8 @@ input:focus, textarea:focus, select:focus {
 }
 
 .auth-gengar-gif {
-  width: 140px;
-  height: 140px;
+  width: 125px;
+  height: 125px;
   object-fit: contain;
   background: #ffffff;
   border: none !important;
