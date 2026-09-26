@@ -2688,8 +2688,8 @@ html[data-theme="purple-dark"] .purple-mascot,
 }
 
 .purple-img {
-  width: 90px;
-  height: 80px;
+  width: 92px;
+  height: 92px;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
@@ -2817,8 +2817,8 @@ html[data-theme="purple-dark"] .purple-mascot,
     width: 70px;
   }
   .purple-img {
-    width: 70px;
-    height: 62px;
+    width: 72px;
+    height: 72px;
   }
   .purple-shadow {
     width: 52px;
