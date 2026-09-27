@@ -5,9 +5,9 @@
 
 let cropperSimple = null;
 
-// Clave principal predeterminada para OCR.Space
-const DEFAULT_OCR_KEY = 'K81133870688957';
-const BACKUP_OCR_KEY = 'helloworld';
+// Clave principal predeterminada para OCR.Space (Proporcionada por el usuario)
+const DEFAULT_OCR_KEY = 'K82699721188957';
+const BACKUP_OCR_KEY = 'K81133870688957';
 
 function getActiveApiKey() {
     const customKey = localStorage.getItem('hitss_custom_ocr_key');
