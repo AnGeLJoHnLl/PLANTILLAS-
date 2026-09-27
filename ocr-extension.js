@@ -5,42 +5,13 @@
 
 let cropperSimple = null;
 
-// Clave principal predeterminada para OCR.Space (Proporcionada por el usuario)
+// Clave principal predeterminada para OCR.Space (Gestionada internamente, oculta)
 const DEFAULT_OCR_KEY = 'K82699721188957';
 const BACKUP_OCR_KEY = 'K81133870688957';
 
 function getActiveApiKey() {
-    const customKey = localStorage.getItem('hitss_custom_ocr_key');
-    if (customKey && customKey.trim().length > 5) {
-        return customKey.trim();
-    }
     return DEFAULT_OCR_KEY;
 }
-
-// Función para que el asesor pueda configurar su propia clave API gratuita de OCR.Space
-function configurarClaveOCR() {
-    const currentKey = localStorage.getItem('hitss_custom_ocr_key') || '';
-    const newKey = prompt(
-        '🔑 Configuración de API Key de OCR.Space:\n\n' +
-        'Puedes obtener tu propia clave gratuita en https://ocr.space/ocrapi\n\n' +
-        'Ingresa tu clave API (o deja en blanco para usar la clave por defecto):',
-        currentKey
-    );
-
-    if (newKey !== null) {
-        const trimmed = newKey.trim();
-        if (trimmed.length > 5) {
-            localStorage.setItem('hitss_custom_ocr_key', trimmed);
-            if (typeof showToast === 'function') showToast('¡Clave OCR guardada correctamente!');
-            else alert('¡Clave OCR guardada correctamente!');
-        } else {
-            localStorage.removeItem('hitss_custom_ocr_key');
-            if (typeof showToast === 'function') showToast('Se restauró la clave por defecto.');
-            else alert('Se restauró la clave por defecto.');
-        }
-    }
-}
-window.configurarClaveOCR = configurarClaveOCR;
 
 document.addEventListener('DOMContentLoaded', () => {
     initOCRSimpleListeners();
@@ -264,10 +235,10 @@ async function processCloudOCRSimple(croppedCanvas) {
 
     const dataUrl = finalCanvas.toDataURL('image/jpeg', 0.85);
 
-    // Lista de claves a intentar: primero la clave activa (o personalizada), luego backup si corresponde
+    // Lista de claves a intentar internamente
     const primaryKey = getActiveApiKey();
     const keysToTry = [primaryKey];
-    if (primaryKey !== BACKUP_OCR_KEY && !localStorage.getItem('hitss_custom_ocr_key')) {
+    if (primaryKey !== BACKUP_OCR_KEY) {
         keysToTry.push(BACKUP_OCR_KEY);
     }
 
@@ -331,9 +302,8 @@ async function processOCRSimple() {
         if (msg.includes('503') || msg.includes('saturado') || msg.includes('overloaded')) {
             alert(
                 '⚠️ Servidores de OCR.Space temporalmente saturados (Error 503).\n\n' +
-                'Los servidores compartidos de OCR.Space están recibiendo alto tráfico en este momento.\n\n' +
-                '• Por favor reintenta en un par de minutos.\n' +
-                '• O si tienes tu propia API Key gratuita de https://ocr.space/ocrapi, configúrala con el botón 🔑 en el panel OCR para prioridad directa.'
+                'Los servidores compartidos de OCR.Space están recibiendo un volumen alto de tráfico en este momento.\n\n' +
+                'Es una condición temporal de la nube de OCR.Space. Por favor reintenta en un par de minutos cuando baje la congestión del servicio.'
             );
         } else if (msg.includes('abort') || msg.includes('timeout')) {
             alert('⏱️ La conexión con OCR.Space tardó demasiado. Por favor verifica tu red y reintenta en unos instantes.');
