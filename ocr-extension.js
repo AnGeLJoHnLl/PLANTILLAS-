@@ -1,47 +1,46 @@
 /* ──────────────────────────────────────────────
-   HITSS Tickets — Módulo OCR de Alta Velocidad
-   Motor Local Tesseract.js (WASM) + Fallback Nube OCR.Space
+   HITSS Tickets — Módulo Escáner OCR en la Nube (OCR.Space)
+   Motor Oficial OCR.Space Cloud API
    ────────────────────────────────────────────── */
 
 let cropperSimple = null;
-let tesseractWorkerPromise = null;
 
-// Obtener o inicializar trabajador único de Tesseract en memoria (Singleton pre-calentado)
-async function getTesseractWorker() {
-    if (!tesseractWorkerPromise) {
-        tesseractWorkerPromise = (async () => {
-            if (typeof Tesseract === 'undefined') {
-                throw new Error('La librería Tesseract.js no está disponible en la página.');
-            }
-            const worker = await Tesseract.createWorker();
-            await worker.loadLanguage('eng');
-            await worker.initialize('eng');
-            return worker;
-        })();
-    }
-    return tesseractWorkerPromise;
-}
-
-// Pool de Claves API gratuitas de OCR.Space (rotación automática masiva)
-const API_KEYS_POOL = [
-    'K81133870688957',
-    'K87948218888957',
-    'helloworld'
-];
-
-let currentApiKeyIndex = 0;
+// Clave principal predeterminada para OCR.Space
+const DEFAULT_OCR_KEY = 'K81133870688957';
+const BACKUP_OCR_KEY = 'helloworld';
 
 function getActiveApiKey() {
     const customKey = localStorage.getItem('hitss_custom_ocr_key');
     if (customKey && customKey.trim().length > 5) {
         return customKey.trim();
     }
-    return API_KEYS_POOL[currentApiKeyIndex % API_KEYS_POOL.length];
+    return DEFAULT_OCR_KEY;
 }
 
-function rotateApiKey() {
-    currentApiKeyIndex = (currentApiKeyIndex + 1) % API_KEYS_POOL.length;
+// Función para que el asesor pueda configurar su propia clave API gratuita de OCR.Space
+function configurarClaveOCR() {
+    const currentKey = localStorage.getItem('hitss_custom_ocr_key') || '';
+    const newKey = prompt(
+        '🔑 Configuración de API Key de OCR.Space:\n\n' +
+        'Puedes obtener tu propia clave gratuita en https://ocr.space/ocrapi\n\n' +
+        'Ingresa tu clave API (o deja en blanco para usar la clave por defecto):',
+        currentKey
+    );
+
+    if (newKey !== null) {
+        const trimmed = newKey.trim();
+        if (trimmed.length > 5) {
+            localStorage.setItem('hitss_custom_ocr_key', trimmed);
+            if (typeof showToast === 'function') showToast('¡Clave OCR guardada correctamente!');
+            else alert('¡Clave OCR guardada correctamente!');
+        } else {
+            localStorage.removeItem('hitss_custom_ocr_key');
+            if (typeof showToast === 'function') showToast('Se restauró la clave por defecto.');
+            else alert('Se restauró la clave por defecto.');
+        }
+    }
 }
+window.configurarClaveOCR = configurarClaveOCR;
 
 document.addEventListener('DOMContentLoaded', () => {
     initOCRSimpleListeners();
@@ -108,8 +107,6 @@ function loadImageBlobOCR(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
         initCropperOCR(e.target.result);
-        // Pre-calentar el motor OCR local en segundo plano para respuesta instantánea
-        getTesseractWorker().catch(err => console.warn('Pre-calentando motor OCR:', err));
     };
     reader.readAsDataURL(file);
 }
@@ -210,22 +207,46 @@ function clearOCRImage() {
     if (typeof showToast === 'function') showToast('Imagen eliminada');
 }
 
-// Mejora automática del canvas para textos pequeños y números de serie/MAC
-function enhanceCanvasForOCR(sourceCanvas) {
-    const minWidth = 450;
-    let canvas = sourceCanvas;
-    if (sourceCanvas.width < minWidth) {
-        const scale = Math.max(2, minWidth / sourceCanvas.width);
-        const scaledCanvas = document.createElement('canvas');
-        scaledCanvas.width = Math.round(sourceCanvas.width * scale);
-        scaledCanvas.height = Math.round(sourceCanvas.height * scale);
-        const ctx = scaledCanvas.getContext('2d');
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(sourceCanvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
-        canvas = scaledCanvas;
+async function queryOCRSpaceAPI(dataUrl, apiKey, engine = '1') {
+    const formData = new FormData();
+    formData.append('base64Image', dataUrl);
+    formData.append('language', 'eng');
+    formData.append('isOverlayRequired', 'false');
+    formData.append('OCREngine', engine);
+    formData.append('scale', 'true');
+    formData.append('apikey', apiKey);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 14000);
+
+    try {
+        const response = await fetch('https://api.ocr.space/parse/image', {
+            method: 'POST',
+            body: formData,
+            headers: { 'apikey': apiKey },
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            if (response.status === 503) {
+                throw new Error('503: Servidor de OCR.Space temporalmente saturado.');
+            }
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const json = await response.json();
+
+        if (json.IsErroredOnProcessing) {
+            const errMsg = (json.ErrorMessage && json.ErrorMessage.length > 0) ? json.ErrorMessage[0] : '';
+            throw new Error(errMsg || 'Error en procesamiento de OCR.Space');
+        }
+
+        return (json.ParsedResults && json.ParsedResults.length > 0) ? (json.ParsedResults[0].ParsedText || '') : '';
+    } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
     }
-    return canvas;
 }
 
 async function processCloudOCRSimple(croppedCanvas) {
@@ -242,41 +263,31 @@ async function processCloudOCRSimple(croppedCanvas) {
     }
 
     const dataUrl = finalCanvas.toDataURL('image/jpeg', 0.85);
-    const apiKey = getActiveApiKey();
 
-    const formData = new FormData();
-    formData.append('base64Image', dataUrl);
-    formData.append('language', 'eng');
-    formData.append('isOverlayRequired', 'false');
-    formData.append('OCREngine', '2');
-    formData.append('scale', 'true');
-    formData.append('apikey', apiKey);
-
-    // Timeout rápido de 3.5 segundos con AbortController para evitar congelamientos
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-    try {
-        const response = await fetch('https://api.ocr.space/parse/image', {
-            method: 'POST',
-            body: formData,
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const json = await response.json();
-
-        if (json.IsErroredOnProcessing) {
-            const errMsg = (json.ErrorMessage && json.ErrorMessage.length > 0) ? json.ErrorMessage[0] : '';
-            throw new Error(errMsg || 'Error en procesamiento OCR');
-        }
-
-        return (json.ParsedResults && json.ParsedResults.length > 0) ? json.ParsedResults[0].ParsedText : '';
-    } catch (err) {
-        clearTimeout(timeoutId);
-        throw err;
+    // Lista de claves a intentar: primero la clave activa (o personalizada), luego backup si corresponde
+    const primaryKey = getActiveApiKey();
+    const keysToTry = [primaryKey];
+    if (primaryKey !== BACKUP_OCR_KEY && !localStorage.getItem('hitss_custom_ocr_key')) {
+        keysToTry.push(BACKUP_OCR_KEY);
     }
+
+    let lastError = null;
+
+    for (const key of keysToTry) {
+        try {
+            const text = await queryOCRSpaceAPI(dataUrl, key, '1');
+            return text;
+        } catch (err) {
+            console.warn(`Intento con clave ${key} falló:`, err.message);
+            lastError = err;
+            // Si el servidor está saturado (503), no insistir innecesariamente
+            if (err.message.includes('503')) {
+                break;
+            }
+        }
+    }
+
+    throw lastError || new Error('No se pudo completar el escaneo con OCR.Space.');
 }
 
 async function processOCRSimple() {
@@ -298,43 +309,37 @@ async function processOCRSimple() {
 
     if (btnScan) {
         btnScan.disabled = true;
-        btnScan.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Escaneando...';
+        btnScan.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Escaneando en OCR.Space...';
     }
 
     try {
-        let rawText = '';
-        const enhancedCanvas = enhanceCanvasForOCR(croppedCanvas);
-
-        // Si el usuario tiene una clave personalizada propia, intentar nube primero con timeout estricto de 3.5s
-        const customKey = localStorage.getItem('hitss_custom_ocr_key');
-        if (customKey && customKey.trim().length > 5) {
-            try {
-                rawText = await processCloudOCRSimple(enhancedCanvas);
-            } catch (cloudErr) {
-                console.warn('OCR en la nube no disponible, cambiando a motor local Tesseract:', cloudErr.message);
-            }
-        }
-
-        // Si no hay clave personalizada o la nube falló/demoró, usar el motor local Tesseract (100% fiable, sin límites ni 503)
-        if (!rawText || rawText.trim().length === 0) {
-            const worker = await getTesseractWorker();
-            const blob = await new Promise(r => enhancedCanvas.toBlob(r, 'image/png'));
-            const res = await worker.recognize(blob);
-            rawText = res.data.text;
-        }
-
+        const rawText = await processCloudOCRSimple(croppedCanvas);
         const cleanedText = (rawText || '').trim();
+
         if (output) output.value = cleanedText;
 
         if (cleanedText.length > 0) {
-            if (typeof showToast === 'function') showToast('¡Texto escaneado con éxito!');
+            if (typeof showToast === 'function') showToast('¡Texto escaneado con OCR.Space!');
         } else {
-            alert('No se detectó texto en el recorte. Asegúrate de subrayar la zona con el botón ✂️ Subrayar.');
+            alert('No se detectó texto en el recorte. Asegúrate de subrayar la zona deseada con el ratón.');
         }
 
     } catch (err) {
-        console.error('Error en escáner OCR:', err);
-        alert('Error en escáner OCR: ' + err.message);
+        console.error('Error en escáner OCR.Space:', err);
+        const msg = err.message || '';
+
+        if (msg.includes('503') || msg.includes('saturado') || msg.includes('overloaded')) {
+            alert(
+                '⚠️ Servidores de OCR.Space temporalmente saturados (Error 503).\n\n' +
+                'Los servidores compartidos de OCR.Space están recibiendo alto tráfico en este momento.\n\n' +
+                '• Por favor reintenta en un par de minutos.\n' +
+                '• O si tienes tu propia API Key gratuita de https://ocr.space/ocrapi, configúrala con el botón 🔑 en el panel OCR para prioridad directa.'
+            );
+        } else if (msg.includes('abort') || msg.includes('timeout')) {
+            alert('⏱️ La conexión con OCR.Space tardó demasiado. Por favor verifica tu red y reintenta en unos instantes.');
+        } else {
+            alert('Error en escáner OCR.Space: ' + msg);
+        }
     } finally {
         if (btnScan) {
             btnScan.disabled = false;
