@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" id="appFavicon" />
-  <link rel="stylesheet" href="styles.css?v=20260926_chansey_lock_mascot" />
+  <link rel="stylesheet" href="styles.css?v=20260927_dynamic_lock_ocr_fix" />
   <!-- FontAwesome & Cropper.js for OCR -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
@@ -35,6 +35,28 @@
       }
     }
 
+    function updateLockScreenTheme(themeName) {
+      const img = document.getElementById('authGengarGif');
+      if (!img) return;
+      const theme = (themeName || document.documentElement.getAttribute('data-theme') || 'purple').toLowerCase();
+      if (theme.startsWith('pink')) {
+        img.src = 'chansey-lock.gif';
+        img.alt = 'Chansey';
+      } else if (theme.startsWith('purple')) {
+        img.src = 'gengar-lock.gif';
+        img.alt = 'Gengar';
+      } else if (theme.startsWith('red')) {
+        img.src = 'blaziken.png';
+        img.alt = 'Blaziken';
+      } else if (theme.startsWith('cyan')) {
+        img.src = 'squirtle.png';
+        img.alt = 'Squirtle';
+      } else {
+        img.src = 'gengar-lock.gif';
+        img.alt = 'Gengar';
+      }
+    }
+
     (function() {
       const savedTheme = localStorage.getItem('hitss_theme') || 'purple';
       document.documentElement.setAttribute('data-theme', savedTheme);
@@ -45,6 +67,7 @@
       document.documentElement.setAttribute('data-theme', themeName);
       localStorage.setItem('hitss_theme', themeName);
       updateFaviconTheme(themeName);
+      updateLockScreenTheme(themeName);
       if (typeof updateThemeMenuUI === 'function') {
         updateThemeMenuUI(themeName);
       }
@@ -187,8 +210,32 @@
   <div id="authModal" class="auth-modal-overlay">
     <div class="auth-card" id="authCard">
       <div class="auth-gengar-wrap" id="authGengarWrap">
-        <img src="chansey-lock.gif" alt="Chansey" class="auth-gengar-gif" id="authGengarGif" />
+        <img src="gengar-lock.gif" alt="Gengar" class="auth-gengar-gif" id="authGengarGif" />
       </div>
+      <script>
+        (function() {
+          const t = (localStorage.getItem('hitss_theme') || 'purple').toLowerCase();
+          const img = document.getElementById('authGengarGif');
+          if (img) {
+            if (t.startsWith('pink')) {
+              img.src = 'chansey-lock.gif';
+              img.alt = 'Chansey';
+            } else if (t.startsWith('purple')) {
+              img.src = 'gengar-lock.gif';
+              img.alt = 'Gengar';
+            } else if (t.startsWith('red')) {
+              img.src = 'blaziken.png';
+              img.alt = 'Blaziken';
+            } else if (t.startsWith('cyan')) {
+              img.src = 'squirtle.png';
+              img.alt = 'Squirtle';
+            } else {
+              img.src = 'gengar-lock.gif';
+              img.alt = 'Gengar';
+            }
+          }
+        })();
+      </script>
       <h2 class="auth-title" id="authTitle">Acceso Protegido</h2>
       
       <!-- Barra de progreso animada para carga -->
@@ -892,9 +939,9 @@
   </div>
 
   <!-- Scripts -->
-  <script src="app.js?v=20260926_chansey_lock_mascot"></script>
+  <script src="app.js?v=20260927_dynamic_lock_ocr_fix"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-  <script src="ocr-extension.js?v=20260926_chansey_lock_mascot"></script>
+  <script src="ocr-extension.js?v=20260927_dynamic_lock_ocr_fix"></script>
 </body>
 </html>

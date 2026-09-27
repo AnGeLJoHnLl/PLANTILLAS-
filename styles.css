@@ -2074,8 +2074,8 @@ input:focus, textarea:focus, select:focus {
 }
 
 .auth-gengar-gif {
-  width: 125px;
-  height: 125px;
+  width: 135px;
+  height: 135px;
   object-fit: contain;
   background: #ffffff;
   border: none !important;

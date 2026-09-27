@@ -1,37 +1,32 @@
 /* ──────────────────────────────────────────────
-   HITSS Tickets — Módulo OCR Simple (Restaurado al Estado Estable Original en la Nube)
+   HITSS Tickets — Módulo OCR de Alta Velocidad
+   Motor Local Tesseract.js (WASM) + Fallback Nube OCR.Space
    ────────────────────────────────────────────── */
 
 let cropperSimple = null;
+let tesseractWorkerPromise = null;
+
+// Obtener o inicializar trabajador único de Tesseract en memoria (Singleton pre-calentado)
+async function getTesseractWorker() {
+    if (!tesseractWorkerPromise) {
+        tesseractWorkerPromise = (async () => {
+            if (typeof Tesseract === 'undefined') {
+                throw new Error('La librería Tesseract.js no está disponible en la página.');
+            }
+            const worker = await Tesseract.createWorker();
+            await worker.loadLanguage('eng');
+            await worker.initialize('eng');
+            return worker;
+        })();
+    }
+    return tesseractWorkerPromise;
+}
 
 // Pool de Claves API gratuitas de OCR.Space (rotación automática masiva)
 const API_KEYS_POOL = [
-    'K81133870688957', // Clave Principal Dedicada Personal (25,000 escaneos/mes)
+    'K81133870688957',
     'K87948218888957',
-    'helloworld',
-    'K887293818888957',
-    'K818987254888957',
-    'K891238472888957',
-    'K839174829888957',
-    'K827194829888957',
-    'K848192847888957',
-    'K859281746888957',
-    'K869382715888957',
-    'K879483726888957',
-    'K889584737888957',
-    'K899685748888957',
-    'K819786759888957',
-    'K829887760888957',
-    'K839988771888957',
-    'K849089782888957',
-    'K859190793888957',
-    'K869291804888957',
-    'K879392815888957',
-    'K889493826888957',
-    'K899594837888957',
-    'K819695848888957',
-    'K829796859888957',
-    'K839897860888957'
+    'helloworld'
 ];
 
 let currentApiKeyIndex = 0;
@@ -113,6 +108,8 @@ function loadImageBlobOCR(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
         initCropperOCR(e.target.result);
+        // Pre-calentar el motor OCR local en segundo plano para respuesta instantánea
+        getTesseractWorker().catch(err => console.warn('Pre-calentando motor OCR:', err));
     };
     reader.readAsDataURL(file);
 }
@@ -213,6 +210,24 @@ function clearOCRImage() {
     if (typeof showToast === 'function') showToast('Imagen eliminada');
 }
 
+// Mejora automática del canvas para textos pequeños y números de serie/MAC
+function enhanceCanvasForOCR(sourceCanvas) {
+    const minWidth = 450;
+    let canvas = sourceCanvas;
+    if (sourceCanvas.width < minWidth) {
+        const scale = Math.max(2, minWidth / sourceCanvas.width);
+        const scaledCanvas = document.createElement('canvas');
+        scaledCanvas.width = Math.round(sourceCanvas.width * scale);
+        scaledCanvas.height = Math.round(sourceCanvas.height * scale);
+        const ctx = scaledCanvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(sourceCanvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+        canvas = scaledCanvas;
+    }
+    return canvas;
+}
+
 async function processCloudOCRSimple(croppedCanvas) {
     const maxDim = 1200;
     let finalCanvas = croppedCanvas;
@@ -227,47 +242,41 @@ async function processCloudOCRSimple(croppedCanvas) {
     }
 
     const dataUrl = finalCanvas.toDataURL('image/jpeg', 0.85);
+    const apiKey = getActiveApiKey();
 
-    let attempts = 0;
-    let lastError = null;
-    currentApiKeyIndex = 0; // Priorizar siempre la clave personal
+    const formData = new FormData();
+    formData.append('base64Image', dataUrl);
+    formData.append('language', 'eng');
+    formData.append('isOverlayRequired', 'false');
+    formData.append('OCREngine', '2');
+    formData.append('scale', 'true');
+    formData.append('apikey', apiKey);
 
-    while (attempts < API_KEYS_POOL.length) {
-        const apiKey = getActiveApiKey();
-        const formData = new FormData();
-        formData.append('base64Image', dataUrl);
-        formData.append('language', 'eng');
-        formData.append('isOverlayRequired', 'false');
-        formData.append('OCREngine', '2');
-        formData.append('scale', 'true');
-        formData.append('apikey', apiKey);
+    // Timeout rápido de 3.5 segundos con AbortController para evitar congelamientos
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-        try {
-            const response = await fetch('https://api.ocr.space/parse/image', { method: 'POST', body: formData });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const json = await response.json();
-            
-            if (json.IsErroredOnProcessing) {
-                const errMsg = (json.ErrorMessage && json.ErrorMessage.length > 0) ? json.ErrorMessage[0] : '';
-                if (errMsg.includes('limit') || errMsg.includes('quota') || errMsg.includes('E201') || errMsg.includes('E403') || errMsg.includes('timed out')) {
-                    console.warn(`Clave API ${apiKey} limitada o agotada. Probando siguiente clave...`);
-                    rotateApiKey();
-                    attempts++;
-                    continue;
-                }
-                throw new Error(errMsg || 'Error en procesamiento OCR');
-            }
+    try {
+        const response = await fetch('https://api.ocr.space/parse/image', {
+            method: 'POST',
+            body: formData,
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
 
-            return (json.ParsedResults && json.ParsedResults.length > 0) ? json.ParsedResults[0].ParsedText : '';
-        } catch (err) {
-            console.warn(`Error con clave ${apiKey}:`, err.message);
-            lastError = err;
-            rotateApiKey();
-            attempts++;
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+
+        if (json.IsErroredOnProcessing) {
+            const errMsg = (json.ErrorMessage && json.ErrorMessage.length > 0) ? json.ErrorMessage[0] : '';
+            throw new Error(errMsg || 'Error en procesamiento OCR');
         }
-    }
 
-    throw lastError || new Error('Cuota de escaneos agotada por el momento.');
+        return (json.ParsedResults && json.ParsedResults.length > 0) ? json.ParsedResults[0].ParsedText : '';
+    } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
+    }
 }
 
 async function processOCRSimple() {
@@ -294,19 +303,23 @@ async function processOCRSimple() {
 
     try {
         let rawText = '';
-        try {
-            rawText = await processCloudOCRSimple(croppedCanvas);
-        } catch (cloudErr) {
-            console.warn('Cambiando a motor secundario local Tesseract:', cloudErr);
-            if (typeof mostrarAvisoSerial === 'function') {
-                mostrarAvisoSerial('⚠️ Usando motor OCR secundario...');
+        const enhancedCanvas = enhanceCanvasForOCR(croppedCanvas);
+
+        // Si el usuario tiene una clave personalizada propia, intentar nube primero con timeout estricto de 3.5s
+        const customKey = localStorage.getItem('hitss_custom_ocr_key');
+        if (customKey && customKey.trim().length > 5) {
+            try {
+                rawText = await processCloudOCRSimple(enhancedCanvas);
+            } catch (cloudErr) {
+                console.warn('OCR en la nube no disponible, cambiando a motor local Tesseract:', cloudErr.message);
             }
-            const blob = await new Promise(r => croppedCanvas.toBlob(r, 'image/png'));
-            const worker = await Tesseract.createWorker();
-            await worker.loadLanguage('eng');
-            await worker.initialize('eng');
+        }
+
+        // Si no hay clave personalizada o la nube falló/demoró, usar el motor local Tesseract (100% fiable, sin límites ni 503)
+        if (!rawText || rawText.trim().length === 0) {
+            const worker = await getTesseractWorker();
+            const blob = await new Promise(r => enhancedCanvas.toBlob(r, 'image/png'));
             const res = await worker.recognize(blob);
-            await worker.terminate();
             rawText = res.data.text;
         }
 
@@ -314,14 +327,14 @@ async function processOCRSimple() {
         if (output) output.value = cleanedText;
 
         if (cleanedText.length > 0) {
-            if (typeof showToast === 'function') showToast('¡Texto escaneado!');
+            if (typeof showToast === 'function') showToast('¡Texto escaneado con éxito!');
         } else {
             alert('No se detectó texto en el recorte. Asegúrate de subrayar la zona con el botón ✂️ Subrayar.');
         }
 
     } catch (err) {
-        console.error(err);
-        alert('Error en escáner: ' + err.message);
+        console.error('Error en escáner OCR:', err);
+        alert('Error en escáner OCR: ' + err.message);
     } finally {
         if (btnScan) {
             btnScan.disabled = false;
@@ -337,9 +350,18 @@ function copyOCRResultText() {
         return;
     }
 
-    navigator.clipboard.writeText(output.value).then(() => {
+    const text = output.value;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            if (typeof showToast === 'function') showToast('¡Texto escaneado copiado!');
+        }).catch(() => {
+            output.select();
+            document.execCommand('copy');
+            if (typeof showToast === 'function') showToast('¡Texto escaneado copiado!');
+        });
+    } else {
+        output.select();
+        document.execCommand('copy');
         if (typeof showToast === 'function') showToast('¡Texto escaneado copiado!');
-    }).catch(err => {
-        console.error(err);
-    });
+    }
 }
