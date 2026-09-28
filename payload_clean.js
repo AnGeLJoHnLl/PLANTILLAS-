@@ -340,6 +340,7 @@ const GESTIONES_ESPECIALES = {
   cintillos_hfc:        { titulo:'CONSULTA DE CINTILLOS HFC',  realizadoPorSuffix:'' },
   derivacion_pext_hfc:  { titulo:'DERIVACION PEXT HFC',  header:'MESA MULTISKILL - DERIVACION PEXT', realizadoPorSuffix:'' },
   derivacion_pext_ftth: { titulo:'DERIVACION PEXT FTTH', header:'MESA MULTISKILL - DERIVACION PEXT', realizadoPorSuffix:'' },
+  derivar_conmutacion:  { titulo:'DERIVAR A CONMUTACION', header:'MESA MULTISKILL HITSS - DERIVAR A CONMUTACION', realizadoPorSuffix:'' },
 };
 
 // ════════════════════════════════
@@ -953,6 +954,7 @@ function renderFormEspecial(tipo, vals) {
   if (tipo === 'cintillos_hfc')         { renderFormCintillosHFC(vals);  return; }
   if (tipo === 'cambio_equipo')         { renderFormCambioEquipo(vals);  return; }
   if (esPext(tipo))                     { renderFormDerivacionPext(tipo, vals); return; }
+  if (tipo === 'derivar_conmutacion')   { renderFormDerivarConmutacion(vals); return; }
 
   // Genérico (codigo_autorizacion, sot_mantto, cambio_plano, etc.)
   const cfg = GESTIONES_ESPECIALES[tipo];
@@ -1509,7 +1511,281 @@ function generarTextoDerivacionPext(s) {
   return L.join('\n');
 }
 
+// ════════════════════════════════
+//  DERIVAR A CONMUTACION
+// ════════════════════════════════
+function setFechaHoyConmutacion(inputId) {
+  const now = new Date();
+  const d = String(now.getDate()).padStart(2, '0');
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const y = now.getFullYear();
+  const el = g(inputId);
+  if (el) {
+    el.value = `${d}/${m}/${y}`;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+window.setFechaHoyConmutacion = setFechaHoyConmutacion;
 
+function setFechaHoraAhoraConmutacion(inputId) {
+  const now = new Date();
+  const d = String(now.getDate()).padStart(2, '0');
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const y = now.getFullYear();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const el = g(inputId);
+  if (el) {
+    el.value = `${d}/${m}/${y} ${hh}:${mm}`;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+window.setFechaHoraAhoraConmutacion = setFechaHoraAhoraConmutacion;
+
+function renderFormDerivarConmutacion(vals) {
+  const area = g('customFormArea');
+  if (!area) return;
+
+  const tipoServ = vals.tipo_servicio || 'HFC';
+  const tipoCli = vals.tipo_cliente || 'MASIVOS';
+  const fechaAct = vals.fecha_activacion || '';
+  const lineaOri = vals.linea_origen || '';
+  const nomCli = vals.nombre_razon_social || '';
+  const cusId = vals.customer_id || '';
+  const descProb = vals.descripcion_problema || '';
+
+  // Destinos
+  const dest1 = vals.linea_destino_1 || '';
+  const op1 = vals.operador_destino_1 || 'CLARO';
+  const fh1 = vals.fecha_hora_1 || '';
+
+  const dest2 = vals.linea_destino_2 || '';
+  const op2 = vals.operador_destino_2 || 'CLARO';
+  const fh2 = vals.fecha_hora_2 || '';
+
+  // Por defecto
+  const plan = vals.plan || 'CONTROL';
+  const cv = vals.sva_central_virtual || 'SI';
+  const hunting = vals.sva_hunting || '';
+  const desvio = vals.sva_desvio || '';
+  const loc = vals.locucion || 'SIN TONO';
+  const nCaso = vals.n_caso || 'No aplica';
+  const dInc = vals.descarte_incognito || 'SI – CMTS – NCOS – OCSI – ESTADO FISICO: CONECTADO';
+  const dSga = vals.descarte_sga || 'SI – ACTIVO';
+  const dJanus = vals.descarte_janus || 'SI – ACTIVO';
+  const dPorta = vals.descarte_porta || '-';
+  const dOtro = vals.descarte_otro || '-';
+
+  let html = `
+    <div class="custom-form-area conmutacion-form-wrap">
+      <div class="conmutacion-section-title">
+        <i class="fa-solid fa-phone-volume"></i> Datos del Servicio y Cliente
+      </div>
+
+      <div class="conmutacion-grid-2">
+        <div class="field-group">
+          <label class="field-label">Tipo de Servicio (FTTH o HFC)</label>
+          <div class="sel-wrap">
+            <select id="cesp_tipo_servicio">
+              <option value="HFC" ${tipoServ === 'HFC' ? 'selected' : ''}>HFC</option>
+              <option value="FTTH" ${tipoServ === 'FTTH' ? 'selected' : ''}>FTTH</option>
+            </select>
+            <span class="sel-arrow">▾</span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Tipo de Cliente (Consumer/Business)</label>
+          <div class="sel-wrap">
+            <select id="cesp_tipo_cliente">
+              <option value="MASIVOS" ${tipoCli === 'MASIVOS' ? 'selected' : ''}>MASIVOS</option>
+              <option value="CONSUMER" ${tipoCli === 'CONSUMER' ? 'selected' : ''}>CONSUMER</option>
+              <option value="BUSINESS" ${tipoCli === 'BUSINESS' ? 'selected' : ''}>BUSINESS</option>
+              <option value="CORPORATIVO" ${tipoCli === 'CORPORATIVO' ? 'selected' : ''}>CORPORATIVO</option>
+            </select>
+            <span class="sel-arrow">▾</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="conmutacion-grid-2">
+        <div class="field-group">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label class="field-label">Fecha de Activación (DD/MM/AAAA)</label>
+            <button type="button" class="btn-micro-helper" onclick="setFechaHoyConmutacion('cesp_fecha_activacion')" title="Poner fecha de hoy">📅 Hoy</button>
+          </div>
+          <input type="text" id="cesp_fecha_activacion" value="${fechaAct}" placeholder="DD/MM/AAAA (Ej. 22/09/2026)" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Línea de Origen</label>
+          <input type="text" id="cesp_linea_origen" value="${lineaOri}" placeholder="Ej. 16478472" />
+        </div>
+      </div>
+
+      <div class="conmutacion-grid-2">
+        <div class="field-group">
+          <label class="field-label">Nombre / Razón Social</label>
+          <input type="text" id="cesp_nombre_razon_social" value="${nomCli}" placeholder="Ej. FERNANDO GABRIEL FERNANDEZ MANOSALVA" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">CustomerID / Código SGA</label>
+          <input type="text" id="cesp_customer_id" value="${cusId}" placeholder="Ej. 36665144" />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Descripción del Problema</label>
+        <textarea id="cesp_descripcion_problema" rows="2" style="width:100%; border-radius:var(--r-sm, 6px); padding:0.5rem; resize:vertical; font-family:inherit; background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border);" placeholder="Ej. NO PUEDE REALIZAR LLAMADAS NI RECIBIR LLAMADAS">${descProb}</textarea>
+      </div>
+
+      <!-- BLOQUE DE PRUEBAS DE LLAMADA -->
+      <div class="conmutacion-section-title" style="margin-top:0.6rem;">
+        <i class="fa-solid fa-tower-broadcast"></i> Pruebas con Líneas de Destino
+      </div>
+
+      <!-- Destino 1 -->
+      <div class="conmutacion-test-card">
+        <div class="conmutacion-test-header">
+          <span>Prueba 1 (Principal)</span>
+          <button type="button" class="btn-micro-helper" onclick="setFechaHoraAhoraConmutacion('cesp_fecha_hora_1')" title="Poner fecha y hora actual">🕒 Ahora</button>
+        </div>
+        <div class="conmutacion-grid-3">
+          <div class="field-group inner" style="margin-bottom:0;">
+            <label class="field-label">Línea Destino 1</label>
+            <input type="text" id="cesp_linea_destino_1" value="${dest1}" placeholder="Ej. 953814487" />
+          </div>
+          <div class="field-group inner" style="margin-bottom:0;">
+            <label class="field-label">Operador Destino 1</label>
+            <div class="sel-wrap">
+              <select id="cesp_operador_destino_1">
+                <option value="CLARO" ${op1==='CLARO'?'selected':''}>CLARO</option>
+                <option value="MOVISTAR" ${op1==='MOVISTAR'?'selected':''}>MOVISTAR</option>
+                <option value="ENTEL" ${op1==='ENTEL'?'selected':''}>ENTEL</option>
+                <option value="BITEL" ${op1==='BITEL'?'selected':''}>BITEL</option>
+                <option value="OTRO" ${op1==='OTRO'?'selected':''}>OTRO</option>
+              </select>
+              <span class="sel-arrow">▾</span>
+            </div>
+          </div>
+          <div class="field-group inner" style="margin-bottom:0;">
+            <label class="field-label">Fecha y Hora Prueba 1</label>
+            <input type="text" id="cesp_fecha_hora_1" value="${fh1}" placeholder="DD/MM/AAAA HH:MM" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Destino 2 -->
+      <div class="conmutacion-test-card">
+        <div class="conmutacion-test-header">
+          <span>Prueba 2 (Opcional)</span>
+          <button type="button" class="btn-micro-helper" onclick="setFechaHoraAhoraConmutacion('cesp_fecha_hora_2')" title="Poner fecha y hora actual">🕒 Ahora</button>
+        </div>
+        <div class="conmutacion-grid-3">
+          <div class="field-group inner" style="margin-bottom:0;">
+            <label class="field-label">Línea Destino 2</label>
+            <input type="text" id="cesp_linea_destino_2" value="${dest2}" placeholder="Ej. 967556596" />
+          </div>
+          <div class="field-group inner" style="margin-bottom:0;">
+            <label class="field-label">Operador Destino 2</label>
+            <div class="sel-wrap">
+              <select id="cesp_operador_destino_2">
+                <option value="CLARO" ${op2==='CLARO'?'selected':''}>CLARO</option>
+                <option value="MOVISTAR" ${op2==='MOVISTAR'?'selected':''}>MOVISTAR</option>
+                <option value="ENTEL" ${op2==='ENTEL'?'selected':''}>ENTEL</option>
+                <option value="BITEL" ${op2==='BITEL'?'selected':''}>BITEL</option>
+                <option value="OTRO" ${op2==='OTRO'?'selected':''}>OTRO</option>
+              </select>
+              <span class="sel-arrow">▾</span>
+            </div>
+          </div>
+          <div class="field-group inner" style="margin-bottom:0;">
+            <label class="field-label">Fecha y Hora Prueba 2</label>
+            <input type="text" id="cesp_fecha_hora_2" value="${fh2}" placeholder="DD/MM/AAAA HH:MM" />
+          </div>
+        </div>
+      </div>
+
+      <!-- VALORES POR DEFECTO -->
+      <details class="conmutacion-details-accordion">
+        <summary class="conmutacion-summary">
+          <span>⚙️ Valores por Defecto (Preconfigurados)</span>
+          <span class="summary-hint">Clic para ver o modificar</span>
+        </summary>
+        <div class="conmutacion-defaults-body" style="padding-top:0.8rem;">
+          <div class="conmutacion-grid-2">
+            <div class="field-group">
+              <label class="field-label">Plan (CONTROL/ABIERTO)</label>
+              <div class="sel-wrap">
+                <select id="cesp_plan">
+                  <option value="CONTROL" ${plan==='CONTROL'?'selected':''}>CONTROL</option>
+                  <option value="ABIERTO" ${plan==='ABIERTO'?'selected':''}>ABIERTO</option>
+                </select>
+                <span class="sel-arrow">▾</span>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Locución</label>
+              <input type="text" id="cesp_locucion" value="${loc}" placeholder="SIN TONO" />
+            </div>
+          </div>
+
+          <div class="conmutacion-grid-3">
+            <div class="field-group">
+              <label class="field-label">SVA: Central Virtual</label>
+              <input type="text" id="cesp_sva_central_virtual" value="${cv}" placeholder="SI" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">SVA: Config. Hunting</label>
+              <input type="text" id="cesp_sva_hunting" value="${hunting}" placeholder="" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">SVA: Desvío Llamadas</label>
+              <input type="text" id="cesp_sva_desvio" value="${desvio}" placeholder="" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">N.° Caso / N° Incidencia</label>
+            <input type="text" id="cesp_n_caso" value="${nCaso}" placeholder="No aplica" />
+          </div>
+
+          <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin:0.6rem 0 0.3rem 0; text-transform:uppercase;">
+            Descartes Realizados (SÍ / NO / N/A)
+          </div>
+
+          <div class="field-group inner">
+            <label class="field-label">Incognito</label>
+            <input type="text" id="cesp_descarte_incognito" value="${dInc}" />
+          </div>
+          <div class="field-group inner">
+            <label class="field-label">SGA/SIAC</label>
+            <input type="text" id="cesp_descarte_sga" value="${dSga}" />
+          </div>
+          <div class="field-group inner">
+            <label class="field-label">Janus (solo cliente Masivo)</label>
+            <input type="text" id="cesp_descarte_janus" value="${dJanus}" />
+          </div>
+          <div class="conmutacion-grid-2">
+            <div class="field-group inner">
+              <label class="field-label">Estado Portabilidad</label>
+              <input type="text" id="cesp_descarte_porta" value="${dPorta}" />
+            </div>
+            <div class="field-group inner">
+              <label class="field-label">Otro (especificar)</label>
+              <input type="text" id="cesp_descarte_otro" value="${dOtro}" />
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  `;
+
+  area.innerHTML = html;
+  area.classList.remove('hidden');
+}
 
 // ════════════════════════════════
 //  RENDER CAMPOS SUBTIPO (shared by PEXT + RECHAZO)
@@ -2102,6 +2378,78 @@ function generarTextoEstandar(s) {
 function generarTextoEspecial(s) {
   const cfg = GESTIONES_ESPECIALES[s.tipoGestion];
   const vals= s.camposPersonalizados||{}; const L=[];
+
+  // Plantilla personalizada para DERIVAR A CONMUTACION
+  if (s.tipoGestion === 'derivar_conmutacion') {
+    L.push('MESA MULTISKILL HITSS - DERIVAR A CONMUTACION');
+    const ticketVal = (s.nTicket || '').trim();
+    if (ticketVal !== '' && ticketVal !== '—' && ticketVal !== '-') {
+      L.push(`N. TICKET: ${ticketVal}`);
+    }
+
+    const tipoServ = (vals.tipo_servicio || 'HFC').trim();
+    L.push(`TIPO DE SERVICIO (FTTH o HFC): ${tipoServ}`);
+
+    const tipoCli = (vals.tipo_cliente || 'MASIVOS').trim();
+    L.push(`TIPO DE CLIENTE (Consumer/Business): ${tipoCli}`);
+
+    const fechaAct = (vals.fecha_activacion || '').trim();
+    L.push(`FECHA DE ACTIVACIÓN (DD/MM/AAAA): ${fechaAct || '-'}`);
+
+    const plan = (vals.plan || 'CONTROL').trim();
+    L.push(`PLAN: (CONTROL/ABIERTO): ${plan}`);
+
+    L.push('SVA:');
+    const cv = (vals.sva_central_virtual || 'SI').trim();
+    L.push(`CENTRAL VIRTUAL: ${cv}`);
+    const hunting = (vals.sva_hunting || '').trim();
+    L.push(`CONFIGURACIÓN HUNTING: ${hunting}`);
+    const desvio = (vals.sva_desvio || '').trim();
+    L.push(`DESVÍO DE LLAMADAS: ${desvio}`);
+
+    const origen = (vals.linea_origen || '').trim();
+    L.push(`LINEA DE ORIGEN: ${origen || '-'}`);
+
+    const dest1 = (vals.linea_destino_1 || '').trim();
+    const dest2 = (vals.linea_destino_2 || '').trim();
+    const destList = [dest1, dest2].filter(Boolean);
+    L.push(`LINEA DE DESTINO: ${destList.length > 0 ? destList.join(' | ') : '-'}`);
+
+    const opList = [];
+    if (dest1) opList.push((vals.operador_destino_1 || 'CLARO').trim());
+    if (dest2) opList.push((vals.operador_destino_2 || 'CLARO').trim());
+    L.push(`OPERADOR DE LÍNEA DESTINO: ${opList.length > 0 ? opList.join(' | ') : '-'}`);
+
+    const fhList = [];
+    if (dest1) fhList.push((vals.fecha_hora_1 || '-').trim());
+    if (dest2) fhList.push((vals.fecha_hora_2 || '-').trim());
+    L.push(`FECHA Y HORA DE PRUEBA: ${fhList.length > 0 ? fhList.join(' | ') : '-'}`);
+
+    const nombre = (vals.nombre_razon_social || '').trim();
+    L.push(`NOMBRE / RAZÓN SOCIAL: ${nombre || '-'}`);
+
+    const cusId = (vals.customer_id || '').trim();
+    L.push(`CUSTOMERID / CÓDIGO SGA: ${cusId || '-'}`);
+
+    const descProb = (vals.descripcion_problema || '').trim();
+    L.push(`DESCRIPCIÓN DEL PROBLEMA: ${descProb || '-'}`);
+
+    const loc = (vals.locucion || 'SIN TONO').trim();
+    L.push(`LOCUCIÓN: ${loc}`);
+
+    const caso = (vals.n_caso || 'No aplica').trim();
+    L.push(`N.° CASO / N° INCIDENCIA: ${caso}`);
+
+    L.push('DESCARTES REALIZADOS (SÍ / NO / N/A):');
+    L.push(`Incognito: ${(vals.descarte_incognito || 'SI – CMTS – NCOS – OCSI – ESTADO FISICO: CONECTADO').trim()}`);
+    L.push(`SGA/SIAC: ${(vals.descarte_sga || 'SI – ACTIVO').trim()}`);
+    L.push(`Janus(solo cliente Masivo): ${(vals.descarte_janus || 'SI – ACTIVO').trim()}`);
+    L.push(`Estado Portabilidad: ${(vals.descarte_porta || '-').trim()}`);
+    L.push(`Otro (especificar): ${(vals.descarte_otro || '-').trim()}`);
+
+    L.push(`REALIZADO POR: ${s.realizadoPor?.trim() || getStoredUserName()}`);
+    return L.join('\n');
+  }
 
   // Plantilla personalizada para RECHAZO GENERAL
   if (s.tipoGestion === 'rechazo_general' || s.tipoGestion === 'rechazo_tecnico') {

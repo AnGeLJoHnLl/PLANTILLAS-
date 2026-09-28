@@ -3023,6 +3023,98 @@ html[data-theme="cyan-dark"] .cyan-mascot,
   }
 }
 
+/* ════════════════════════════════════════════════
+   FORMULARIO DERIVAR A CONMUTACION
+   ════════════════════════════════════════════════ */
+.conmutacion-form-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.conmutacion-section-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border);
+}
+.conmutacion-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+.conmutacion-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.6rem;
+}
+.conmutacion-test-card {
+  background: var(--bg-card, rgba(255,255,255,0.03));
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm, 8px);
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.conmutacion-test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.btn-micro-helper {
+  background: rgba(168,85,247,0.12);
+  border: 1px solid rgba(168,85,247,0.3);
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-micro-helper:hover {
+  background: var(--accent);
+  color: #fff;
+}
+.conmutacion-details-accordion {
+  border: 1px dashed var(--border);
+  border-radius: var(--r-sm, 8px);
+  padding: 0.5rem 0.75rem;
+  background: rgba(0,0,0,0.05);
+}
+.conmutacion-summary {
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+.summary-hint {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.conmutacion-defaults-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.si-gestion-badge.badge-derivar_conmutacion { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #60a5fa; }
+.sec-tipo-badge.badge-derivar_conmutacion { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: var(--accent); }
+
+
 
 
 

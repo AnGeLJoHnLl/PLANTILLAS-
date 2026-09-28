@@ -9,8 +9,6 @@ $strTable = @()
 $strIndex = 0
 
 function Encrypt-Strings($match) {
-    global:strTable
-    global:strIndex
     $strVal = $match.Groups[1].Value
     if ($strVal.Length -gt 2) {
         $hexVal = [System.BitConverter]::ToString([System.Text.Encoding]::UTF8.GetBytes($strVal)).Replace("-", "\x")
