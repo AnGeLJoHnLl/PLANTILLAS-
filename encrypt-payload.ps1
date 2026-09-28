@@ -28,4 +28,10 @@ $replacement = 'const ENCRYPTED_PAYLOAD_BASE64 = "' + $cipherB64 + '";'
 $newSrcContent = [regex]::Replace($srcContent, $pattern, $replacement)
 [System.IO.File]::WriteAllText('C:\Users\alexa\.gemini\antigravity\scratch\hitss-tickets\app.src.js', $newSrcContent, [System.Text.Encoding]::UTF8)
 
-Write-Host "✅ Payload encrypted and updated in app.src.js successfully!"
+# Compile app.src.js -> app.js with secure base64 loader
+$srcBytes = [System.Text.Encoding]::UTF8.GetBytes($newSrcContent)
+$appBase64 = [Convert]::ToBase64String($srcBytes)
+$appWrapped = "(function(_0x5a1b,_0x3f2c){var _0x1d4e=function(_0x4b2a){return decodeURIComponent(atob(_0x4b2a).split('').map(function(c){return '%'+('00'+c.charCodeAt(0).toString(16)).slice(-2);}).join(''));};var _0x9e8a=_0x1d4e(_0x3f2c);var _0x2c1f=document.createElement('script');_0x2c1f.text=_0x9e8a;document.head.appendChild(_0x2c1f);})(this,'$appBase64');"
+[System.IO.File]::WriteAllText('C:\Users\alexa\.gemini\antigravity\scratch\hitss-tickets\app.js', $appWrapped, [System.Text.Encoding]::UTF8)
+
+Write-Host "✅ Payload encrypted and app.js generated successfully!"

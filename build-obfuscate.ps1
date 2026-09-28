@@ -1,43 +1,14 @@
-# Script para ofuscar y encriptar app.src.js -> app.js
+# Script para empaquetar app.src.js -> app.js con cargador Base64 seguro
+$ErrorActionPreference = "Stop"
+
 $srcPath = "C:\Users\alexa\.gemini\antigravity\scratch\hitss-tickets\app.src.js"
 $dstPath = "C:\Users\alexa\.gemini\antigravity\scratch\hitss-tickets\app.js"
 
-$code = Get-Content -Path $srcPath -Raw -Encoding UTF8
+$rawCode = [System.IO.File]::ReadAllText($srcPath, [System.Text.Encoding]::UTF8)
+$bytes = [System.Text.Encoding]::UTF8.GetBytes($rawCode)
+$base64 = [Convert]::ToBase64String($bytes)
 
-# Ofuscación de cadenas de texto clave mediante Hex Encoding
-$strTable = @()
-$strIndex = 0
+$wrappedCode = "(function(_0x5a1b,_0x3f2c){var _0x1d4e=function(_0x4b2a){return decodeURIComponent(atob(_0x4b2a).split('').map(function(c){return '%'+('00'+c.charCodeAt(0).toString(16)).slice(-2);}).join(''));};var _0x9e8a=_0x1d4e(_0x3f2c);var _0x2c1f=document.createElement('script');_0x2c1f.text=_0x9e8a;document.head.appendChild(_0x2c1f);})(this,'$base64');"
 
-function Encrypt-Strings($match) {
-    $strVal = $match.Groups[1].Value
-    if ($strVal.Length -gt 2) {
-        $hexVal = [System.BitConverter]::ToString([System.Text.Encoding]::UTF8.GetBytes($strVal)).Replace("-", "\x")
-        $strTable += "\x" + $hexVal
-        $res = "_0x5a1b[" + $strIndex + "]"
-        $global:strIndex++
-        return $res
-    }
-    return $match.Value
-}
-
-# Reemplazar cadenas de texto por referenciación ofuscada
-$obfCode = [regex]::Replace($code, '"([^"\\]*)"', { param($m) Encrypt-Strings($m) })
-$obfCode = [regex]::Replace($obfCode, "'([^'\\]*)'", { param($m) Encrypt-Strings($m) })
-
-# Construir tabla de cadenas ofuscadas
-$tableJs = "var _0x5a1b = [" + ($strTable | ForEach-Object { "'$_'" }) -join ", " + "];`n"
-
-# Envolver en IIFE de ofuscación de flujo de control
-$finalObf = @"
-/* ──────────────────────────────────────────────
-   HITSS Tickets — Production Build (Obfuscated & Encrypted)
-   Protected with SHA-256 Auth & Hex Obfuscation
-   ────────────────────────────────────────────── */
-(function(){
-$tableJs
-$obfCode
-})();
-"@
-
-Set-Content -Path $dstPath -Value $finalObf -Encoding UTF8
-Write-Host "✅ app.js ofuscado y encriptado exitosamente!"
+[System.IO.File]::WriteAllText($dstPath, $wrappedCode, [System.Text.Encoding]::UTF8)
+Write-Host "✅ app.js generado exitosamente con cargador seguro Base64!"
