@@ -275,6 +275,15 @@ const MOTIVOS_CAMBIO_AUTORIZACION = [
 ];
 
 // ════════════════════════════════
+//  MOTIVOS SOT DE MANTO
+// ════════════════════════════════
+const MOTIVOS_SOT_MANTTO = [
+  'CAMBIO DE ACOMETIDA',
+  'CAMBIO DE EQUIPO POR COMPATIBILIDAD',
+  'CAMBIO DE EQUIPO DAÑADO'
+];
+
+// ════════════════════════════════
 //  GESTIONES ESPECIALES
 // ════════════════════════════════
 const GESTIONES_ESPECIALES = {
@@ -302,7 +311,7 @@ const GESTIONES_ESPECIALES = {
   sot_mantto: {
     titulo:'SOT DE MANTO', header:'MESA MULTISKILL HITSS - SOT DE MANTO', realizadoPorSuffix:'',
     campos:[
-      { key:'motivo', label:'MOTIVO', type:'select', options:['','CAMBIO DE ACOMETIDA','CAMBIO DE EQUIPO POR COMPATIBILIDAD','CAMBIO DE EQUIPO DAÑADO'], onchange:'onManttoMotivoChange()' },
+      { key:'motivo', label:'MOTIVO', type:'motivo_mantto_select' },
       { key:'equipo_retirar',   label:'EQUIPO A RETIRAR',    type:'text', ph:'Ej. MODEM HFC / ONT FTTH', grupo:'mantto_equipo' },
       { key:'modelo_ret',       label:'MODELO',             type:'model_select', grupo:'mantto_equipo' },
       { key:'cod_autorizacion', label:'COD. DE AUTORIZACION', type:'text', ph:'Ej. COD-001',            grupo:'mantto_equipo' },
@@ -1205,10 +1214,36 @@ function removeCambioItem(tipo, uid) {
 //  CONDICIONAL SOT MANTTO
 // ════════════════════════════════
 function onManttoMotivoChange() {
-  const m = gv('cesp_motivo');
-  const ok = ['CAMBIO DE EQUIPO POR COMPATIBILIDAD','CAMBIO DE EQUIPO DAÑADO'].includes(m);
+  const sel = g('cesp_motivo');
+  if (!sel) return;
+  const isMan = sel.value === '__manual__';
+  const man = g('cesp_motivo_manual');
+  if (man) {
+    if (isMan) {
+      man.classList.remove('hidden');
+      man.focus();
+    } else {
+      man.classList.add('hidden');
+    }
+  }
+  const manVal = (man ? man.value : '').trim().toUpperCase();
+  const ok = ['CAMBIO DE EQUIPO POR COMPATIBILIDAD','CAMBIO DE EQUIPO DAÑADO'].includes(sel.value) ||
+             (isMan && manVal.includes('EQUIPO'));
   document.querySelectorAll('[data-grupo="mantto_equipo"]').forEach(el =>
     ok ? el.classList.remove('hidden') : el.classList.add('hidden'));
+  guardarFormActual();
+}
+
+function onManttoMotivoInput() {
+  const sel = g('cesp_motivo');
+  const man = g('cesp_motivo_manual');
+  if (sel && sel.value === '__manual__' && man) {
+    const manVal = man.value.trim().toUpperCase();
+    const ok = manVal.includes('EQUIPO');
+    document.querySelectorAll('[data-grupo="mantto_equipo"]').forEach(el =>
+      ok ? el.classList.remove('hidden') : el.classList.add('hidden'));
+  }
+  guardarFormActual();
 }
 
 // ════════════════════════════════
@@ -1795,7 +1830,8 @@ function renderSubtipoCampos(campos, vals) {
   campos.forEach(c => {
     const isManttoGroup = c.grupo === 'mantto_equipo';
     const motivoVal     = vals.motivo || '';
-    const esCambioEq    = ['CAMBIO DE EQUIPO POR COMPATIBILIDAD','CAMBIO DE EQUIPO DAÑADO'].includes(motivoVal);
+    const esCambioEq    = ['CAMBIO DE EQUIPO POR COMPATIBILIDAD','CAMBIO DE EQUIPO DAÑADO'].includes(motivoVal) ||
+                          motivoVal.toUpperCase().includes('EQUIPO');
     const hiddenCls     = (isManttoGroup && !esCambioEq) ? 'hidden' : '';
     const groupAttr     = isManttoGroup ? 'data-grupo="mantto_equipo"' : '';
 
@@ -1862,6 +1898,30 @@ function renderSubtipoCampos(campos, vals) {
           </div>
           <input type="text" id="cesp_${c.key}_manual" class="input-mod-manual ${isMan ? '' : 'hidden'}"
                  value="${manVal}" placeholder="Escribe el motivo…" style="margin-top:0.4rem" />
+        </div>`;
+    } else if (c.type === 'motivo_mantto_select') {
+      const currVal = (c.key in vals) ? vals[c.key] : '';
+      const isMan = currVal !== '' && !MOTIVOS_SOT_MANTTO.includes(currVal);
+      const selVal = isMan ? '__manual__' : currVal;
+      const manVal = isMan ? currVal : '';
+
+      let optsHtml = `<option value="">— Selecciona motivo —</option>`;
+      MOTIVOS_SOT_MANTTO.forEach(m => {
+        optsHtml += `<option value="${m}" ${selVal===m?'selected':''}>${m}</option>`;
+      });
+      optsHtml += `<option value="__manual__" ${selVal==='__manual__'?'selected':''}>✏️ Otro / Agregar motivo manualmente…</option>`;
+
+      html += `
+        <div class="field-group ${hiddenCls}" ${groupAttr}>
+          <label class="field-label">${c.label}</label>
+          <div class="sel-wrap">
+            <select id="cesp_${c.key}" onchange="onManttoMotivoChange()">
+              ${optsHtml}
+            </select>
+            <span class="sel-arrow">▾</span>
+          </div>
+          <input type="text" id="cesp_${c.key}_manual" class="input-mod-manual ${isMan ? '' : 'hidden'}"
+                 value="${manVal}" placeholder="Escribe el motivo…" style="margin-top:0.4rem" oninput="onManttoMotivoInput()" />
         </div>`;
     } else if (c.type === 'model_select') {
       const currVal = (c.key in vals) ? vals[c.key] : '';
@@ -2531,7 +2591,10 @@ function generarTextoEspecial(s) {
 
   cfg.campos.forEach(c => {
     if (c.grupo==='mantto_equipo') {
-      if (!['CAMBIO DE EQUIPO POR COMPATIBILIDAD','CAMBIO DE EQUIPO DAÑADO'].includes(vals.motivo||'')) return;
+      const motUpper = (vals.motivo||'').toUpperCase();
+      const esCambioEq = ['CAMBIO DE EQUIPO POR COMPATIBILIDAD','CAMBIO DE EQUIPO DAÑADO'].includes(vals.motivo||'') ||
+                         motUpper.includes('EQUIPO');
+      if (!esCambioEq) return;
     }
     if (c.type==='fixed')  L.push(`${c.label}: ${c.value}`);
     else                   L.push(`${c.label}: ${vals[c.key]||'—'}`);
