@@ -2360,13 +2360,13 @@ html[data-theme="pink-dark"] .pink-mascot,
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
-  filter: drop-shadow(0 6px 14px rgba(225, 29, 72, 0.35));
+  background: transparent !important;
+  filter: none !important;
   animation: blisseyFloat 1.2s ease-in-out infinite;
-  transition: filter 0.25s ease;
 }
 
 .pink-mascot:hover .mascot-img {
-  filter: drop-shadow(0 10px 20px rgba(225, 29, 72, 0.6));
+  filter: none !important;
 }
 
 .mascot-shadow {
@@ -2561,13 +2561,13 @@ html[data-theme="red-dark"] .red-mascot,
   width: 72px;
   height: 95px;
   object-fit: contain;
-  filter: drop-shadow(0 6px 14px rgba(239, 68, 68, 0.45));
+  background: transparent !important;
+  filter: none !important;
   animation: blazikenFloat 1.3s ease-in-out infinite;
-  transition: filter 0.25s ease;
 }
 
 .red-mascot:hover .red-img {
-  filter: drop-shadow(0 10px 22px rgba(239, 68, 68, 0.75));
+  filter: none !important;
 }
 
 .red-shadow {
@@ -2752,13 +2752,13 @@ html[data-theme="purple-dark"] .purple-mascot,
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
   object-fit: contain;
-  filter: drop-shadow(0 6px 14px rgba(168, 85, 247, 0.45));
+  background: transparent !important;
+  filter: none !important;
   animation: gengarFloat 1.25s ease-in-out infinite;
-  transition: filter 0.25s ease;
 }
 
 .purple-mascot:hover .purple-img {
-  filter: drop-shadow(0 10px 22px rgba(168, 85, 247, 0.75));
+  filter: none !important;
 }
 
 .purple-shadow {
@@ -2938,13 +2938,13 @@ html[data-theme="cyan-dark"] .cyan-mascot,
   width: 82px;
   height: 88px;
   object-fit: contain;
-  filter: drop-shadow(0 6px 14px rgba(6, 182, 212, 0.45));
+  background: transparent !important;
+  filter: none !important;
   animation: squirtleFloat 1.25s ease-in-out infinite;
-  transition: filter 0.25s ease;
 }
 
 .cyan-mascot:hover .cyan-img {
-  filter: drop-shadow(0 10px 22px rgba(6, 182, 212, 0.75));
+  filter: none !important;
 }
 
 .cyan-shadow {
@@ -3721,7 +3721,8 @@ html[data-theme="halloween"] .purple-mascot,
 }
 
 html[data-theme="halloween"] .purple-img {
-  filter: drop-shadow(0 6px 16px rgba(249, 115, 22, 0.75)) drop-shadow(0 0 24px rgba(168, 85, 247, 0.65));
+  filter: none !important;
+  background: transparent !important;
 }
 
 html[data-theme="halloween"] .purple-bubble {
@@ -3753,7 +3754,8 @@ html[data-theme="halloween"] .halloween-stage,
   width: 115px;
   height: 115px;
   color: rgba(254, 215, 170, 0.42);
-  filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.35));
+  filter: none;
+  background: transparent;
   pointer-events: none;
 }
 
@@ -3786,7 +3788,8 @@ html[data-theme="halloween"] .halloween-stage,
 .hw-spider-body {
   font-size: 1.35rem;
   margin-top: -6px;
-  filter: drop-shadow(0 2px 8px rgba(249, 115, 22, 0.7));
+  filter: none;
+  background: transparent;
   animation: spiderSwing 2.8s ease-in-out infinite;
 }
 
@@ -3831,9 +3834,9 @@ html[data-theme="halloween"] .halloween-stage,
 .hw-bat {
   position: fixed;
   font-size: 1.4rem;
-  opacity: 0.75;
-  filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.55));
-  will-change: transform;
+  opacity: 0.78;
+  filter: none;
+  background: transparent;
 }
 
 .hw-bat-1 {
@@ -3898,8 +3901,9 @@ html[data-theme="halloween"] .halloween-stage,
 .hw-spooky-floater {
   position: fixed;
   font-size: 1.65rem;
-  opacity: 0.42;
-  filter: drop-shadow(0 0 12px rgba(249, 115, 22, 0.65));
+  opacity: 0.52;
+  filter: none;
+  background: transparent;
   animation: spookyLevitate 5.5s ease-in-out infinite;
 }
 
