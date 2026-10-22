@@ -695,6 +695,13 @@ function cambiarSeccion(idx) {
   cargarSeccion(idx);
   renderSidebar();
   guardarSeccionesStorage();
+
+  const formEl = g('ticketForm');
+  if (formEl) {
+    formEl.classList.remove('sec-switch-anim');
+    void formEl.offsetWidth;
+    formEl.classList.add('sec-switch-anim');
+  }
 }
 
 // ════════════════════════════════
@@ -2372,6 +2379,12 @@ function generarPlantilla() {
   s.plantillaGenerada = texto;
   g('plantillaTexto').textContent = texto;
   hide('previewEmpty'); show('previewContent'); g('btnCopy').disabled=false;
+  const prevBox = g('previewContent');
+  if (prevBox) {
+    prevBox.classList.remove('preview-pop-anim');
+    void prevBox.offsetWidth;
+    prevBox.classList.add('preview-pop-anim');
+  }
   renderSidebar();
 }
 

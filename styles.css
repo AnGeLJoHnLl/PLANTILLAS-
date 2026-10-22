@@ -3177,6 +3177,374 @@ html[data-theme="cyan-dark"] .cyan-mascot,
 .si-gestion-badge.badge-derivar_conmutacion { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #60a5fa; }
 .sec-tipo-badge.badge-derivar_conmutacion { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: var(--accent); }
 
+/* ════════════════════════════════════════════════════════════════════════
+   CAPA ESTÉTICA PREMIUM & MICRO-ANIMACIONES AVANZADAS
+   Eleva toda la interfaz con efectos glassmorphism, brillos dinámicos,
+   física elástica (spring), barridos de luz y transiciones fluidas.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Fondo ambiental con respiración suave */
+@keyframes ambientPulse {
+  0%, 100% {
+    background-position: 0% 0%, 100% 100%;
+  }
+  50% {
+    background-position: 6% 4%, 94% 96%;
+  }
+}
+
+body {
+  animation: ambientPulse 18s ease-in-out infinite;
+}
+
+/* 2. Paneles con línea superior luminosa animada y elevación 3D sutil */
+.panel {
+  position: relative;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.28s ease !important;
+}
+
+.panel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+  opacity: 0;
+  transform: scaleX(0.35);
+  transition: opacity 0.32s ease, transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.panel:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent) !important;
+  box-shadow: var(--card-shadow), 0 12px 30px -8px var(--accent-glow) !important;
+}
+
+.panel:hover::after,
+.panel:focus-within::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.panel-header {
+  position: relative;
+  overflow: hidden;
+  transition: background 0.25s ease;
+}
+
+.panel:hover .panel-header h2 svg {
+  transform: scale(1.14) rotate(-4deg);
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+.panel-header h2 svg {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
+}
+
+/* 3. Barrido de luz (Shimmer) en botones principales y de acción */
+.btn-primary,
+.btn-nueva-sot-top,
+.btn-nueva-sot-bottom,
+.btn-copy,
+.btn-copy-ocr-main,
+.btn-sm-primary,
+.btn-borrar-todas-sot {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.24s ease,
+              background 0.24s ease,
+              border-color 0.24s ease !important;
+}
+
+.btn-primary::after,
+.btn-nueva-sot-top::after,
+.btn-nueva-sot-bottom::after,
+.btn-copy::after,
+.btn-copy-ocr-main::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(25deg);
+  transition: left 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.btn-primary:hover::after,
+.btn-nueva-sot-top:hover::after,
+.btn-nueva-sot-bottom:hover::after,
+.btn-copy:hover:not(:disabled)::after,
+.btn-copy-ocr-main:hover::after {
+  left: 135%;
+}
+
+.btn-primary:hover,
+.btn-nueva-sot-top:hover,
+.btn-nueva-sot-bottom:hover,
+.btn-copy-ocr-main:hover {
+  transform: translateY(-2px) scale(1.015) !important;
+  box-shadow: 0 8px 22px var(--accent-glow) !important;
+}
+
+.btn-primary:active,
+.btn-nueva-sot-top:active,
+.btn-nueva-sot-bottom:active,
+.btn-borrar-todas-sot:active,
+.btn-borrar-todas-top:active {
+  transform: translateY(0) scale(0.96) !important;
+}
+
+/* 4. Tarjetas de SOT en el Sidebar: Animación elástica, pulso de estado e ícono vivo */
+@keyframes sotCardSpringIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-14px) scale(0.95);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes statusDotPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.22);
+    filter: brightness(1.25) drop-shadow(0 0 5px currentColor);
+  }
+}
+
+.sot-card-item {
+  animation: sotCardSpringIn 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  animation-delay: calc(0.035s * var(--i, 0));
+}
+
+.sot-card-item .sot-card-icon-wrap {
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.25s ease,
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+}
+
+.sot-card-item:hover .sot-card-icon-wrap {
+  transform: scale(1.1) rotate(-6deg);
+  border-color: var(--accent);
+  box-shadow: 0 3px 10px var(--accent-glow);
+}
+
+.sot-card-item.active .sot-card-icon-wrap {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px var(--accent-glow);
+  transform: scale(1.06);
+}
+
+.sot-card-item.active .sot-status-dot {
+  display: inline-block;
+  animation: statusDotPulse 2s ease-in-out infinite;
+}
+
+.sot-card-close {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.2s ease,
+              color 0.2s ease !important;
+}
+
+.sot-card-close:hover {
+  transform: scale(1.2) rotate(90deg);
+  background: rgba(239, 68, 68, 0.14);
+}
+
+/* Botón Borrar Todas con entrada elástica */
+.btn-borrar-todas-sot:not(.hidden),
+.btn-borrar-todas-top:not(.hidden) {
+  animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* 5. Campos de Formulario, Etiquetas Interactivas y Bloques Dinámicos */
+.field-group {
+  transition: transform 0.2s ease;
+}
+
+.field-group .field-label {
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.field-group:focus-within .field-label {
+  color: var(--accent);
+  transform: translateX(3px);
+}
+
+input[type="text"]:hover:not(:focus),
+input[type="number"]:hover:not(:focus),
+textarea:hover:not(:focus),
+select:hover:not(:focus) {
+  border-color: rgba(168, 85, 247, 0.45);
+}
+
+.sel-wrap .sel-arrow {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+}
+
+.sel-wrap:hover .sel-arrow,
+.sel-wrap:focus-within .sel-arrow {
+  color: var(--accent);
+  transform: translateY(-50%) scale(1.2);
+}
+
+/* Animación fluida al cambiar de SOT o abrir bloques dinámicos */
+@keyframes formSwitchSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(7px) scale(0.992);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.sec-switch-anim,
+.custom-form-area,
+.eq-block,
+.eq-block-adicional,
+.item-block,
+.conmutacion-test-card {
+  animation: formSwitchSlide 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.eq-block,
+.eq-block-adicional,
+.signal-subcard,
+.conmutacion-test-card,
+.item-block {
+  transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+}
+
+.eq-block:hover,
+.eq-block-adicional:hover,
+.signal-subcard:hover,
+.conmutacion-test-card:hover,
+.item-block:hover {
+  border-color: var(--accent);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08), 0 0 12px var(--accent-glow);
+  transform: translateY(-1.5px);
+}
+
+/* Botones de tecnología (HFC / FTTH) y agregar equipos */
+.tech-btn,
+.btn-add {
+  transition: all 0.24s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.tech-btn:hover,
+.btn-add:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.tech-btn.active {
+  transform: scale(1.02);
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+/* 6. Vista Previa de Plantilla: Destello al generar e ícono flotante en estado vacío */
+@keyframes previewPopGlow {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.975) translateY(5px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.008) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes emptySvgFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(2deg);
+  }
+}
+
+.preview-pop-anim .plantilla-pre {
+  animation: previewPopGlow 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-color: var(--accent);
+  box-shadow: 0 0 18px var(--accent-glow);
+}
+
+.preview-empty svg {
+  animation: emptySvgFloat 3.5s ease-in-out infinite;
+  color: var(--accent);
+  opacity: 0.55 !important;
+  filter: drop-shadow(0 4px 10px var(--accent-glow));
+}
+
+/* Dropzone OCR con pulso suave al pasar el mouse */
+.dropzone-simple:hover .ocr-scan-frame-icon {
+  transform: scale(1.16) rotate(-4deg);
+  filter: drop-shadow(0 4px 10px var(--accent-glow));
+}
+
+.ocr-scan-frame-icon {
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.28s ease;
+}
+
+/* 7. Barra superior (Topbar & Header) con insignias vivas */
+.sec-tipo-badge,
+.badge-internal,
+.ocr-hint-pill {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.25s ease,
+              background 0.25s ease;
+}
+
+.sec-tipo-badge:hover,
+.badge-internal:hover {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 3px 10px var(--accent-glow);
+}
+
+.brand-icon {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
+}
+
+.brand:hover .brand-icon {
+  transform: rotate(-8deg) scale(1.08);
+  box-shadow: 0 0 18px var(--accent-glow);
+}
+
+
 
 
 
