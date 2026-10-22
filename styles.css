@@ -889,17 +889,38 @@ body {
 .sidebar {
   width: var(--sidebar-w); min-width: var(--sidebar-w);
   background: var(--bg-surface); border-right: 1.5px solid var(--border);
-  display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0;
+  display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0;
   height: 100%;
   padding: 0.9rem 0.8rem;
 }
 .sidebar-top {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 0.9rem;
+  flex-shrink: 0;
+}
+.sidebar-top-actions {
+  display: flex; align-items: center; gap: 0.35rem;
 }
 .sidebar-title {
   font-size: 0.76rem; font-weight: 900; color: var(--text-accent);
   text-transform: uppercase; letter-spacing: 0.06em;
+}
+.btn-borrar-todas-top {
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: var(--danger);
+  border-radius: 20px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all var(--t);
+}
+.btn-borrar-todas-top:hover {
+  background: var(--danger);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
 }
 .btn-nueva-sot-top {
   display: flex; align-items: center; gap: 0.3rem;
@@ -912,6 +933,13 @@ body {
   background: var(--accent-hover);
   transform: translateY(-1px);
 }
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  flex-shrink: 0;
+}
 .btn-nueva-sot-bottom {
   width: 100%;
   padding: 8px 14px;
@@ -922,7 +950,6 @@ body {
   font-size: 0.82rem;
   border: none;
   cursor: pointer;
-  margin-top: 10px;
   box-shadow: 0 4px 12px var(--accent-glow);
   transition: all var(--t);
 }
@@ -930,8 +957,44 @@ body {
   background: var(--accent-hover);
   transform: translateY(-1px);
 }
+.btn-borrar-todas-sot {
+  width: 100%;
+  padding: 7px 12px;
+  border-radius: 20px;
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--danger);
+  font-weight: 800;
+  font-size: 0.76rem;
+  font-family: 'Inter', sans-serif;
+  border: 1.5px solid rgba(239, 68, 68, 0.35);
+  cursor: pointer;
+  transition: all var(--t);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.btn-borrar-todas-sot:hover {
+  background: var(--danger);
+  color: #ffffff;
+  border-color: var(--danger);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+.btn-borrar-todas-sot.hidden,
+.btn-borrar-todas-top.hidden {
+  display: none !important;
+}
 
-.sections-list { flex: 1; display: flex; flex-direction: column; gap: 0.55rem; }
+.sections-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
 
 /* Section items - Formato Tarjeta Redondeada Mockup */
 .sot-card-item {

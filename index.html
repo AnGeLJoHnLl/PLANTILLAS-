@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" id="appFavicon" />
-  <link rel="stylesheet" href="styles.css?v=20260927_dynamic_lock_ocr_fix" />
+  <link rel="stylesheet" href="styles.css?v=20261022_borrar_todas_sot" />
   <!-- FontAwesome & Cropper.js for OCR -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
@@ -435,11 +435,15 @@
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
         <span class="sidebar-title">SECCIONES</span>
-        <button class="btn-nueva-sot-top" onclick="nuevaSeccion()" title="Nueva SOT">+ Nueva SOT</button>
+        <div class="sidebar-top-actions">
+          <button type="button" id="btnBorrarTodasTop" class="btn-borrar-todas-top hidden" onclick="borrarTodasLasSot()" title="Borrar todas las SOT acumuladas">🗑️</button>
+          <button class="btn-nueva-sot-top" onclick="nuevaSeccion()" title="Nueva SOT">+ Nueva SOT</button>
+        </div>
       </div>
       <div id="sectionsList" class="sections-list"></div>
       <div class="sidebar-bottom">
         <button type="button" class="btn-nueva-sot-bottom" onclick="nuevaSeccion()">+ Nueva SOT</button>
+        <button type="button" id="btnBorrarTodasSot" class="btn-borrar-todas-sot hidden" onclick="borrarTodasLasSot()" title="Eliminar todas las SOT acumuladas">🗑️ Borrar todas las SOT</button>
       </div>
     </aside>
 
@@ -942,7 +946,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="app.js?v=20260928_derivar_conmutacion"></script>
+  <script src="app.js?v=20261022_borrar_todas_sot"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="ocr-extension.js?v=20260927_clean_hidden_key"></script>
 </body>

@@ -2646,12 +2646,42 @@ function renderSidebar() {
     `;
     list.appendChild(item);
   });
+
+  // Mostrar/ocultar botón "Borrar todas las SOT" cuando se acumulan más de 1 SOT
+  const btnClearAll = g('btnBorrarTodasSot');
+  const btnClearTop = g('btnBorrarTodasTop');
+  if (secciones.length > 1) {
+    if (btnClearAll) {
+      btnClearAll.textContent = `🗑️ Borrar todas (${secciones.length})`;
+      btnClearAll.classList.remove('hidden');
+    }
+    if (btnClearTop) {
+      btnClearTop.title = `Borrar todas las SOT (${secciones.length})`;
+      btnClearTop.classList.remove('hidden');
+    }
+  } else {
+    if (btnClearAll) btnClearAll.classList.add('hidden');
+    if (btnClearTop) btnClearTop.classList.add('hidden');
+  }
 }
 
 // ════════════════════════════════
 //  ELIMINAR / LIMPIAR
 // ════════════════════════════════
 function confirmarEliminarSeccion() { confirmarEliminar(seccionActiva,null); }
+
+function borrarTodasLasSot() {
+  secciones = [crearSeccion()];
+  seccionActiva = 0;
+  sv('seccionNumero', '');
+  limpiarSeccionActual();
+  cargarSeccion(0);
+  renderSidebar();
+  guardarSeccionesStorage();
+  if (typeof mostrarAvisoSerial === 'function') {
+    mostrarAvisoSerial('🗑️ Se eliminaron todas las SOT acumuladas.');
+  }
+}
 
 function confirmarEliminar(idx, event) {
   if (event) event.stopPropagation();
