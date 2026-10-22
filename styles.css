@@ -1849,15 +1849,10 @@ input:focus, textarea:focus, select:focus {
   animation: fadeUp 0.22s cubic-bezier(0.16,1,0.3,1);
 }
 
-/* Respeta a quienes prefieren menos movimiento en la interfaz (excluyendo mascotas decorativas) */
+/* Respeta a quienes prefieren menos movimiento en la interfaz (excluyendo mascotas y Modo Halloween) */
 @media (prefers-reduced-motion: reduce) {
-  *:not(.pink-mascot):not(.red-mascot):not(.purple-mascot):not(.cyan-mascot):not([class*="mascot-"]):not([class*="-walker"]):not([class*="-img"]):not([class*="-shadow"]):not([class*="-bubble"]),
-  *:not(.pink-mascot):not(.red-mascot):not(.purple-mascot):not(.cyan-mascot):not([class*="mascot-"]):not([class*="-walker"]):not([class*="-img"]):not([class*="-shadow"]):not([class*="-bubble"])::before,
-  *:not(.pink-mascot):not(.red-mascot):not(.purple-mascot):not(.cyan-mascot):not([class*="mascot-"]):not([class*="-walker"]):not([class*="-img"]):not([class*="-shadow"]):not([class*="-bubble"])::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
+  html:not([data-theme="halloween"]) *:not(.pink-mascot):not(.red-mascot):not(.purple-mascot):not(.cyan-mascot):not([class*="mascot-"]):not([class*="-walker"]):not([class*="-img"]):not([class*="-shadow"]):not([class*="-bubble"]):not([class*="hw-"]):not(.halloween-stage) {
+    scroll-behavior: auto;
   }
 }
 
@@ -3543,6 +3538,428 @@ select:hover:not(:focus) {
   transform: rotate(-8deg) scale(1.08);
   box-shadow: 0 0 18px var(--accent-glow);
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   🎃 MODO HALLOWEEN · PERSONALIZACIÓN TOTAL Y ESCENARIO ANIMADO
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Paleta de Colores Modo Halloween (Noche de Brujas: Calabaza + Cripta Violeta + Ectoplasma) */
+html[data-theme="halloween"],
+[data-theme="halloween"] {
+  --bg-base:        #0b0514;
+  --bg-surface:     #150a26;
+  --bg-card:        #170b2b;
+  --bg-card-sub:    #0e061b;
+  --bg-input:       #0d0519;
+  --bg-input-hover: #1c0e35;
+  --border:         #4c1d95;
+  --border-focus:   #f97316;
+  --border-limpiar: #7c2d12;
+  --bg-limpiar:     #1c0d18;
+  --text-limpiar:   #fdba74;
+
+  --accent:         #f97316;
+  --accent-hover:   #ea580c;
+  --accent-glow:    rgba(249, 115, 22, 0.42);
+  --accent2:        #a855f7;
+  --accent2-glow:   rgba(168, 85, 247, 0.35);
+  --accent3:        #2a1245;
+
+  --header-bg-1:    #431407;
+  --header-bg-2:    #2e1065;
+  --header-border:  #f97316;
+  --ql-bg:          #1a0933;
+  --ambient-glow-1: rgba(249, 115, 22, 0.22);
+  --ambient-glow-2: rgba(168, 85, 247, 0.18);
+
+  --gold:           #fbbf24;
+  --danger:         #ef4444;
+  --danger-glow:    rgba(239, 68, 68, 0.35);
+  --success:        #22c55e;
+
+  --text-primary:   #fff7ed;
+  --text-secondary: #fed7aa;
+  --text-muted:     #c084fc;
+  --text-accent:    #fb923c;
+
+  --card-shadow:    0 10px 35px rgba(0, 0, 0, 0.65), 0 0 18px rgba(249, 115, 22, 0.12);
+}
+
+/* Botón Rápido Halloween en la barra superior */
+.btn-quick-halloween {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.22), rgba(147, 51, 234, 0.28));
+  border: 1.5px solid rgba(249, 115, 22, 0.55);
+  color: #fff7ed;
+  border-radius: 20px;
+  padding: 4px 11px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 10px rgba(249, 115, 22, 0.25);
+}
+
+.btn-quick-halloween:hover {
+  transform: translateY(-2px) scale(1.04);
+  background: linear-gradient(135deg, #f97316, #9333ea);
+  border-color: #fdba74;
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.55);
+}
+
+.btn-quick-halloween .hw-btn-pumpkin {
+  display: inline-block;
+  animation: pumpkinWiggle 2.4s ease-in-out infinite;
+}
+
+.btn-quick-halloween.is-active-hw,
+html[data-theme="halloween"] .btn-quick-halloween {
+  background: linear-gradient(135deg, #ea580c 0%, #7e22ce 100%);
+  border-color: #fbbf24;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.7), 0 0 28px rgba(168, 85, 247, 0.45);
+}
+
+.swatch-halloween {
+  background: linear-gradient(135deg, #f97316 50%, #3b0764 50%);
+  border: 1px solid #fbbf24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+}
+
+@keyframes pumpkinWiggle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25%      { transform: rotate(-12deg) scale(1.12); }
+  75%      { transform: rotate(12deg) scale(1.12); }
+}
+
+/* ── Personalización de Header, Paneles, Tarjetas y Botones en Modo Halloween ── */
+@keyframes hwCandleFlicker {
+  0%, 100% {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65), 0 0 16px rgba(249, 115, 22, 0.22);
+  }
+  50% {
+    box-shadow: 0 10px 34px rgba(0, 0, 0, 0.7), 0 0 26px rgba(249, 115, 22, 0.42), 0 0 40px rgba(168, 85, 247, 0.2);
+  }
+}
+
+html[data-theme="halloween"] .app-header {
+  background: linear-gradient(135deg, #2e1065 0%, #431407 50%, #1e0936 100%);
+  border-bottom: 2px solid #f97316;
+  box-shadow: 0 4px 25px rgba(249, 115, 22, 0.4);
+}
+
+html[data-theme="halloween"] .app-title::after {
+  content: ' 🎃';
+  display: inline-block;
+  animation: pumpkinWiggle 3s ease-in-out infinite;
+}
+
+html[data-theme="halloween"] .sidebar-title::before {
+  content: '🕸️ ';
+}
+
+html[data-theme="halloween"] .panel {
+  border-color: rgba(249, 115, 22, 0.38);
+  animation: hwCandleFlicker 4s ease-in-out infinite;
+}
+
+html[data-theme="halloween"] .panel::after {
+  opacity: 0.85;
+  transform: scaleX(1);
+  height: 3px;
+  background: linear-gradient(90deg, #7e22ce, #f97316, #fbbf24, #f97316, #7e22ce);
+}
+
+html[data-theme="halloween"] .panel-header {
+  background: linear-gradient(90deg, rgba(46, 16, 101, 0.75) 0%, rgba(67, 20, 7, 0.55) 100%);
+  border-bottom-color: rgba(249, 115, 22, 0.35);
+}
+
+html[data-theme="halloween"] .btn-primary,
+html[data-theme="halloween"] .btn-nueva-sot-top,
+html[data-theme="halloween"] .btn-nueva-sot-bottom,
+html[data-theme="halloween"] .btn-copy-ocr-main {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 55%, #9333ea 100%);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  box-shadow: 0 4px 18px rgba(249, 115, 22, 0.45);
+}
+
+html[data-theme="halloween"] .sot-card-item {
+  border-color: rgba(168, 85, 247, 0.4);
+  background: linear-gradient(135deg, rgba(23, 11, 43, 0.95), rgba(35, 14, 58, 0.9));
+}
+
+html[data-theme="halloween"] .sot-card-item.active {
+  background: linear-gradient(135deg, rgba(124, 45, 18, 0.65), rgba(88, 28, 135, 0.75));
+  border-color: #f97316;
+  box-shadow: 0 0 18px rgba(249, 115, 22, 0.5), inset 0 0 10px rgba(249, 115, 22, 0.2);
+}
+
+html[data-theme="halloween"] .sot-card-item.active .sot-card-icon-wrap {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  border-color: #fbbf24;
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.75);
+}
+
+html[data-theme="halloween"] .plantilla-pre {
+  border-color: rgba(249, 115, 22, 0.45);
+  box-shadow: inset 0 0 20px rgba(249, 115, 22, 0.08);
+}
+
+/* Mostrar a Gengar también en el Modo Halloween con aura de calabaza/ectoplasma */
+html[data-theme="halloween"] .purple-mascot,
+[data-theme="halloween"] .purple-mascot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+html[data-theme="halloween"] .purple-img {
+  filter: drop-shadow(0 6px 16px rgba(249, 115, 22, 0.75)) drop-shadow(0 0 24px rgba(168, 85, 247, 0.65));
+}
+
+html[data-theme="halloween"] .purple-bubble {
+  background: #170b2b !important;
+  color: #fb923c !important;
+  border-color: #f97316 !important;
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.5) !important;
+}
+
+/* ── Escenario de Animaciones de Fondo Halloween (#halloweenStage) ── */
+.halloween-stage {
+  display: none;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 900;
+  overflow: hidden;
+}
+
+html[data-theme="halloween"] .halloween-stage,
+[data-theme="halloween"] .halloween-stage {
+  display: block;
+}
+
+/* Telarañas en las esquinas */
+.hw-cobweb {
+  position: fixed;
+  top: 58px;
+  width: 115px;
+  height: 115px;
+  color: rgba(254, 215, 170, 0.42);
+  filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.35));
+  pointer-events: none;
+}
+
+.hw-cobweb-tl {
+  left: 0;
+}
+
+.hw-cobweb-tr {
+  right: 0;
+  transform: scaleX(-1);
+}
+
+/* Araña colgante animada que sube y baja por su hilo */
+.hw-spider-hanger {
+  position: fixed;
+  top: 58px;
+  right: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: spiderYoYo 7s ease-in-out infinite;
+}
+
+.hw-spider-thread {
+  width: 1.5px;
+  height: 75px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.55), rgba(249, 115, 22, 0.65));
+}
+
+.hw-spider-body {
+  font-size: 1.35rem;
+  margin-top: -6px;
+  filter: drop-shadow(0 2px 8px rgba(249, 115, 22, 0.7));
+  animation: spiderSwing 2.8s ease-in-out infinite;
+}
+
+@keyframes spiderYoYo {
+  0%, 100% { transform: translateY(-38px); }
+  45%, 55% { transform: translateY(18px); }
+}
+
+@keyframes spiderSwing {
+  0%, 100% { transform: rotate(-10deg); }
+  50%      { transform: rotate(10deg); }
+}
+
+/* Luna de Cosecha Resplandeciente */
+.hw-harvest-moon {
+  position: fixed;
+  top: 115px;
+  right: 36px;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fef08a 0%, #f97316 65%, #ea580c 100%);
+  box-shadow: 0 0 35px rgba(249, 115, 22, 0.55), 0 0 75px rgba(249, 115, 22, 0.28);
+  opacity: 0.22;
+  animation: moonPulseGlow 5s ease-in-out infinite;
+}
+
+@keyframes moonPulseGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.2;
+    box-shadow: 0 0 35px rgba(249, 115, 22, 0.55), 0 0 75px rgba(249, 115, 22, 0.25);
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.32;
+    box-shadow: 0 0 50px rgba(249, 115, 22, 0.8), 0 0 95px rgba(168, 85, 247, 0.45);
+  }
+}
+
+/* Murciélagos voladores */
+.hw-bat {
+  position: fixed;
+  font-size: 1.4rem;
+  opacity: 0.75;
+  filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.55));
+  will-change: transform;
+}
+
+.hw-bat-1 {
+  top: 14%;
+  left: -50px;
+  animation: batFlyRight1 19s linear infinite;
+}
+
+.hw-bat-2 {
+  top: 28%;
+  right: -50px;
+  font-size: 1.15rem;
+  opacity: 0.6;
+  animation: batFlyLeft1 24s linear infinite 4s;
+}
+
+.hw-bat-3 {
+  top: 62%;
+  left: -50px;
+  font-size: 1.25rem;
+  opacity: 0.55;
+  animation: batFlyRight2 28s linear infinite 9s;
+}
+
+.hw-bat-4 {
+  top: 44%;
+  right: -50px;
+  font-size: 1.05rem;
+  opacity: 0.5;
+  animation: batFlyLeft2 22s linear infinite 12s;
+}
+
+@keyframes batFlyRight1 {
+  0%   { transform: translate(-60px, 0) rotate(8deg) scale(0.9); }
+  25%  { transform: translate(28vw, -28px) rotate(-6deg) scale(1.08); }
+  50%  { transform: translate(55vw, 18px) rotate(10deg) scale(0.95); }
+  75%  { transform: translate(82vw, -22px) rotate(-8deg) scale(1.05); }
+  100% { transform: translate(110vw, 10px) rotate(6deg) scale(0.9); }
+}
+
+@keyframes batFlyLeft1 {
+  0%   { transform: translate(60px, 0) scaleX(-1) rotate(6deg); }
+  30%  { transform: translate(-32vw, 24px) scaleX(-1) rotate(-8deg); }
+  65%  { transform: translate(-68vw, -20px) scaleX(-1) rotate(8deg); }
+  100% { transform: translate(-110vw, 12px) scaleX(-1) rotate(-5deg); }
+}
+
+@keyframes batFlyRight2 {
+  0%   { transform: translate(-60px, 0) rotate(-5deg); }
+  35%  { transform: translate(35vw, 30px) rotate(9deg); }
+  70%  { transform: translate(72vw, -25px) rotate(-7deg); }
+  100% { transform: translate(110vw, 15px) rotate(5deg); }
+}
+
+@keyframes batFlyLeft2 {
+  0%   { transform: translate(60px, 0) scaleX(-1) rotate(-6deg); }
+  50%  { transform: translate(-50vw, -35px) scaleX(-1) rotate(10deg); }
+  100% { transform: translate(-110vw, 20px) scaleX(-1) rotate(-6deg); }
+}
+
+/* Fantasmas y Calabazas espectrales flotantes en los bordes */
+.hw-spooky-floater {
+  position: fixed;
+  font-size: 1.65rem;
+  opacity: 0.42;
+  filter: drop-shadow(0 0 12px rgba(249, 115, 22, 0.65));
+  animation: spookyLevitate 5.5s ease-in-out infinite;
+}
+
+.hw-float-1 {
+  bottom: 95px;
+  right: 22px;
+  animation-delay: 0s;
+}
+
+.hw-float-2 {
+  bottom: 24px;
+  right: 26px;
+  font-size: 1.8rem;
+  opacity: 0.68;
+  animation-delay: 1.2s;
+}
+
+.hw-float-3 {
+  top: 52%;
+  right: 14px;
+  font-size: 1.35rem;
+  opacity: 0.48;
+  animation-delay: 2.4s;
+}
+
+.hw-float-4 {
+  bottom: 110px;
+  left: 14px;
+  font-size: 1.45rem;
+  opacity: 0.35;
+  animation-delay: 3.1s;
+}
+
+@keyframes spookyLevitate {
+  0%, 100% {
+    transform: translateY(0) rotate(-4deg) scale(1);
+  }
+  50% {
+    transform: translateY(-16px) rotate(6deg) scale(1.1);
+  }
+}
+
+/* Niebla espectral inferior */
+.hw-eerie-mist {
+  position: fixed;
+  bottom: 0;
+  left: -20%;
+  width: 140%;
+  height: 75px;
+  background: radial-gradient(ellipse at center bottom, rgba(168, 85, 247, 0.18) 0%, rgba(249, 115, 22, 0.09) 45%, transparent 75%);
+  filter: blur(10px);
+  animation: mistDrift 14s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes mistDrift {
+  0%   { transform: translateX(-4%) scaleY(0.95); opacity: 0.65; }
+  100% { transform: translateX(4%) scaleY(1.12); opacity: 0.95; }
+}
+
 
 
 

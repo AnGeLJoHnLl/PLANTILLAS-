@@ -666,6 +666,7 @@ function toggleThemeMenu(event) {
 function updateThemeMenuUI(themeName) {
   const currentTheme = themeName || document.documentElement.getAttribute('data-theme') || 'purple';
   const themes = [
+    'halloween',
     'pink', 'purple-light', 'red-light', 'cyan-light',
     'pink-dark', 'purple-dark', 'red-dark', 'cyan-dark', 'purple'
   ];
@@ -675,6 +676,28 @@ function updateThemeMenuUI(themeName) {
       badge.style.display = (t === currentTheme) ? 'inline-block' : 'none';
     }
   });
+  const btnHw = g('btnQuickHalloween');
+  if (btnHw) {
+    btnHw.classList.toggle('is-active-hw', currentTheme === 'halloween');
+  }
+}
+
+function spawnHalloweenSparks(originEl) {
+  if (document.documentElement.getAttribute('data-theme') !== 'halloween') return;
+  const el = originEl || g('btnCopy') || document.body;
+  const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 40 };
+  const emojis = ['🎃', '🦇', '👻', '🍬', '🕸️', '✨'];
+  for (let i = 0; i < 6; i++) {
+    const p = document.createElement('div');
+    p.className = 'mascot-ghost-particle';
+    p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    const tx = (Math.random() - 0.5) * 110;
+    p.style.setProperty('--tx', `${tx}px`);
+    p.style.left = `${rect.left + (rect.width / 2) + (i - 2.5) * 14}px`;
+    p.style.top = `${rect.top}px`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 950);
+  }
 }
 
 function nuevaSeccion() {
@@ -685,6 +708,7 @@ function nuevaSeccion() {
   cargarSeccion(seccionActiva);
   renderSidebar();
   guardarSeccionesStorage();
+  spawnHalloweenSparks(document.querySelector('.btn-nueva-sot-top'));
 }
 
 function cambiarSeccion(idx) {
@@ -2385,6 +2409,7 @@ function generarPlantilla() {
     void prevBox.offsetWidth;
     prevBox.classList.add('preview-pop-anim');
   }
+  spawnHalloweenSparks(g('panelVistaPrevia'));
   renderSidebar();
 }
 

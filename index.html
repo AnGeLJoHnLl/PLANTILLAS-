@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" id="appFavicon" />
-  <link rel="stylesheet" href="styles.css?v=20261022_premium_animations" />
+  <link rel="stylesheet" href="styles.css?v=20261022_halloween_mode" />
   <!-- FontAwesome & Cropper.js for OCR -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
@@ -23,7 +23,8 @@
       'red-dark':     { c1: '#f43f5e', c2: '#e11d48', c3: '#fb7185' },
       'cyan-light':   { c1: '#0284c7', c2: '#0369a1', c3: '#06b6d4' },
       'cyan-dark':    { c1: '#06b6d4', c2: '#0891b2', c3: '#22d3ee' },
-      'purple':       { c1: '#4f46e5', c2: '#7c3aed', c3: '#06b6d4' }
+      'purple':       { c1: '#4f46e5', c2: '#7c3aed', c3: '#06b6d4' },
+      'halloween':    { c1: '#f97316', c2: '#7e22ce', c3: '#22c55e' }
     };
 
     function updateFaviconTheme(themeName) {
@@ -64,6 +65,10 @@
     })();
 
     function setAppTheme(themeName) {
+      const current = document.documentElement.getAttribute('data-theme');
+      if (current && current !== 'halloween') {
+        localStorage.setItem('hitss_prev_theme', current);
+      }
       document.documentElement.setAttribute('data-theme', themeName);
       localStorage.setItem('hitss_theme', themeName);
       updateFaviconTheme(themeName);
@@ -71,8 +76,22 @@
       if (typeof updateThemeMenuUI === 'function') {
         updateThemeMenuUI(themeName);
       }
+      const btnHw = document.getElementById('btnQuickHalloween');
+      if (btnHw) {
+        btnHw.classList.toggle('is-active-hw', themeName === 'halloween');
+      }
       const menu = document.getElementById('themeDropdownMenu');
       if (menu) menu.classList.add('hidden');
+    }
+
+    function toggleHalloweenMode() {
+      const current = document.documentElement.getAttribute('data-theme') || 'purple';
+      if (current === 'halloween') {
+        const prev = localStorage.getItem('hitss_prev_theme') || 'purple';
+        setAppTheme(prev === 'halloween' ? 'purple' : prev);
+      } else {
+        setAppTheme('halloween');
+      }
     }
 
     function mascotHappyJump() {
@@ -145,9 +164,12 @@
       mascot.classList.add('is-spooky');
       setTimeout(() => mascot.classList.remove('is-spooky'), 700);
 
+      const isHw = document.documentElement.getAttribute('data-theme') === 'halloween';
       const bubble = document.getElementById('purpleMascotBubble');
       if (bubble) {
-        const msgs = ['¡Ge-ge-ge! 👻', '¡Sombra lista! 😈', '¡Modo fantasma! 💜', '¡Nadie nos para! 🔮', '¡Gen-gar! ✨'];
+        const msgs = isHw
+          ? ['¡Dulce o truco! 🎃', '¡Feliz Halloween! 👻', '¡Noche de brujas! 🦇', '¡Ge-ge-ge! 🍬', '¡Buh! ¿Te asusté? 🕸️']
+          : ['¡Ge-ge-ge! 👻', '¡Sombra lista! 😈', '¡Modo fantasma! 💜', '¡Nadie nos para! 🔮', '¡Gen-gar! ✨'];
         bubble.textContent = msgs[Math.floor(Math.random() * msgs.length)];
         bubble.style.opacity = '1';
         bubble.style.transform = 'translateX(-50%) translateY(0) scale(1)';
@@ -158,13 +180,15 @@
       }
 
       const rect = mascot.getBoundingClientRect();
-      for (let i = 0; i < 4; i++) {
+      const icons = isHw ? ['🎃', '🦇', '👻', '🍬', '🕸️', '🕷️'] : ['👻', '😈', '💜', '🔮', '✨'];
+      const count = isHw ? 6 : 4;
+      for (let i = 0; i < count; i++) {
         const ghost = document.createElement('div');
         ghost.className = 'mascot-ghost-particle';
-        ghost.textContent = ['👻', '😈', '💜', '🔮', '✨'][Math.floor(Math.random() * 5)];
-        const tx = (Math.random() - 0.5) * 60;
+        ghost.textContent = icons[Math.floor(Math.random() * icons.length)];
+        const tx = (Math.random() - 0.5) * 85;
         ghost.style.setProperty('--tx', `${tx}px`);
-        ghost.style.left = `${rect.left + rect.width / 2 - 10 + (i - 1.5) * 12}px`;
+        ghost.style.left = `${rect.left + rect.width / 2 - 10 + (i - count / 2) * 12}px`;
         ghost.style.top = `${rect.top}px`;
         document.body.appendChild(ghost);
         setTimeout(() => ghost.remove(), 950);
@@ -363,8 +387,12 @@
       </a>
     </div>
 
-    <!-- Selector de Temas Flotante Elegante -->
-    <div class="theme-dropdown-wrap">
+    <!-- Botón Rápido Modo Halloween & Selector de Temas -->
+    <div class="theme-dropdown-wrap" style="display:flex; align-items:center; gap:0.45rem;">
+      <button type="button" class="btn-quick-halloween" id="btnQuickHalloween" onclick="toggleHalloweenMode()" title="Activar / Desactivar Modo Halloween 🎃">
+        <span class="hw-btn-pumpkin">🎃</span>
+        <span class="hw-btn-label">Halloween</span>
+      </button>
       <button type="button" class="btn-theme-dropdown" id="btnThemeDropdown" onclick="toggleThemeMenu(event)" title="Cambiar tema de color">
         <span class="theme-btn-icon">🎨</span>
         <span class="theme-btn-text">Tema</span>
@@ -373,7 +401,14 @@
       <div id="themeDropdownMenu" class="theme-dropdown-menu hidden">
         <div class="theme-menu-title">TEMAS DE INTERFAZ</div>
         <div class="theme-options-list">
-          <div class="theme-section-label">☀️ Temas Claros</div>
+          <div class="theme-section-label">🎃 Especial</div>
+          <button type="button" class="theme-opt-btn theme-opt-halloween" onclick="setAppTheme('halloween')">
+            <span class="theme-swatch swatch-halloween">🎃</span>
+            <span class="theme-opt-name">Modo Halloween</span>
+            <span class="theme-active-tag" id="badge-halloween">Activo</span>
+          </button>
+
+          <div class="theme-section-label" style="margin-top:0.4rem;">☀️ Temas Claros</div>
           <button type="button" class="theme-opt-btn" onclick="setAppTheme('pink')">
             <span class="theme-swatch swatch-pink"></span>
             <span class="theme-opt-name">Tono Shyrley</span>
@@ -945,8 +980,53 @@
     </div>
   </div>
 
+  <!-- ═══ ESCENARIO ANIMADO EXCLUSIVO MODO HALLOWEEN ═══ -->
+  <div class="halloween-stage" id="halloweenStage" aria-hidden="true">
+    <!-- Telaraña esquina superior izquierda -->
+    <svg class="hw-cobweb hw-cobweb-tl" viewBox="0 0 120 120" fill="none">
+      <path d="M0 0 L120 0 M0 0 L105 55 M0 0 L85 85 M0 0 L55 105 M0 0 L0 120" stroke="currentColor" stroke-width="1.3" opacity="0.55"/>
+      <path d="M30 0 Q26 16 26 26 Q16 26 0 30" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+      <path d="M60 0 Q52 32 45 45 Q32 52 0 60" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+      <path d="M90 0 Q78 48 65 65 Q48 78 0 90" stroke="currentColor" stroke-width="1.2" opacity="0.45"/>
+      <path d="M115 0 Q96 60 82 82 Q60 96 0 115" stroke="currentColor" stroke-width="1.2" opacity="0.4"/>
+    </svg>
+
+    <!-- Telaraña esquina superior derecha + Araña colgante -->
+    <svg class="hw-cobweb hw-cobweb-tr" viewBox="0 0 120 120" fill="none">
+      <path d="M0 0 L120 0 M0 0 L105 55 M0 0 L85 85 M0 0 L55 105 M0 0 L0 120" stroke="currentColor" stroke-width="1.3" opacity="0.55"/>
+      <path d="M30 0 Q26 16 26 26 Q16 26 0 30" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+      <path d="M60 0 Q52 32 45 45 Q32 52 0 60" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+      <path d="M90 0 Q78 48 65 65 Q48 78 0 90" stroke="currentColor" stroke-width="1.2" opacity="0.45"/>
+      <path d="M115 0 Q96 60 82 82 Q60 96 0 115" stroke="currentColor" stroke-width="1.2" opacity="0.4"/>
+    </svg>
+
+    <!-- Araña animada que sube y baja por su hilo -->
+    <div class="hw-spider-hanger">
+      <div class="hw-spider-thread"></div>
+      <div class="hw-spider-body">🕷️</div>
+    </div>
+
+    <!-- Luna de Cosecha / Halloween resplandeciente -->
+    <div class="hw-harvest-moon"></div>
+
+    <!-- Murciélagos voladores con distintas trayectorias -->
+    <div class="hw-bat hw-bat-1">🦇</div>
+    <div class="hw-bat hw-bat-2">🦇</div>
+    <div class="hw-bat hw-bat-3">🦇</div>
+    <div class="hw-bat hw-bat-4">🦇</div>
+
+    <!-- Fantasmas y Calabazas espectrales flotantes -->
+    <div class="hw-spooky-floater hw-float-1">👻</div>
+    <div class="hw-spooky-floater hw-float-2">🎃</div>
+    <div class="hw-spooky-floater hw-float-3">🕯️</div>
+    <div class="hw-spooky-floater hw-float-4">👻</div>
+
+    <!-- Niebla embrujada en la parte inferior -->
+    <div class="hw-eerie-mist"></div>
+  </div>
+
   <!-- Scripts -->
-  <script src="app.js?v=20261022_premium_animations"></script>
+  <script src="app.js?v=20261022_halloween_mode"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="ocr-extension.js?v=20260927_clean_hidden_key"></script>
 </body>
