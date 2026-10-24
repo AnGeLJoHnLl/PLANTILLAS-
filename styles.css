@@ -3964,6 +3964,234 @@ html[data-theme="halloween"] .halloween-stage,
   100% { transform: translateX(4%) scaleY(1.12); opacity: 0.95; }
 }
 
+/* ── Nuevas Animaciones Extra Modo Halloween ── */
+
+/* 1. Relámpago / Tormenta Embrujada */
+.hw-lightning-flash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 20%, rgba(251, 191, 36, 0.25), rgba(168, 85, 247, 0.18), transparent 75%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 901;
+  animation: distantStormLightning 16s infinite;
+}
+
+.hw-lightning-flash.is-flashing {
+  animation: instantThunderFlash 1s ease-out !important;
+}
+
+@keyframes instantThunderFlash {
+  0%   { opacity: 0; }
+  10%  { opacity: 0.75; }
+  22%  { opacity: 0.1; }
+  35%  { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+
+@keyframes distantStormLightning {
+  0%, 92%, 96%, 100% { opacity: 0; }
+  93%                { opacity: 0.28; }
+  94%                { opacity: 0.04; }
+  95%                { opacity: 0.18; }
+}
+
+/* 2. Segunda Araña Izquierda con ritmo distinto */
+.hw-spider-hanger-left {
+  right: auto;
+  left: 44px;
+  animation: spiderYoYoLeft 9.5s ease-in-out infinite 1.8s;
+}
+
+.hw-thread-left {
+  height: 95px;
+}
+
+@keyframes spiderYoYoLeft {
+  0%, 100% { transform: translateY(-55px); }
+  50%      { transform: translateY(22px); }
+}
+
+/* 3. Bruja voladora en escoba cruzando frente a la luna */
+.hw-witch-flyer {
+  position: fixed;
+  top: 118px;
+  right: -70px;
+  font-size: 1.85rem;
+  opacity: 0.82;
+  filter: none !important;
+  background: transparent !important;
+  pointer-events: none;
+  animation: witchMoonFlight 26s linear infinite 2s;
+}
+
+@keyframes witchMoonFlight {
+  0%   { transform: translate(80px, 25px) scaleX(-1) rotate(5deg); opacity: 0; }
+  5%   { opacity: 0.85; }
+  25%  { transform: translate(-28vw, -18px) scaleX(-1) rotate(-6deg); }
+  50%  { transform: translate(-55vw, 14px) scaleX(-1) rotate(8deg); }
+  75%  { transform: translate(-82vw, -22px) scaleX(-1) rotate(-5deg); }
+  95%  { opacity: 0.85; }
+  100% { transform: translate(-112vw, 10px) scaleX(-1) rotate(4deg); opacity: 0; }
+}
+
+/* 4. Murciélagos adicionales en diagonal */
+.hw-bat-5 {
+  top: 78%;
+  left: -50px;
+  font-size: 1.18rem;
+  opacity: 0.58;
+  animation: batDiagonalUp 21s linear infinite 6s;
+}
+
+.hw-bat-6 {
+  top: 20%;
+  left: -50px;
+  font-size: 0.98rem;
+  opacity: 0.5;
+  animation: batDiagonalDown 25s linear infinite 14s;
+}
+
+@keyframes batDiagonalUp {
+  0%   { transform: translate(-50px, 0) rotate(-12deg); }
+  50%  { transform: translate(52vw, -35vh) rotate(8deg) scale(1.1); }
+  100% { transform: translate(110vw, -65vh) rotate(-10deg) scale(0.9); }
+}
+
+@keyframes batDiagonalDown {
+  0%   { transform: translate(-50px, 0) rotate(12deg); }
+  50%  { transform: translate(50vw, 28vh) rotate(-8deg) scale(1.08); }
+  100% { transform: translate(110vw, 55vh) rotate(10deg) scale(0.92); }
+}
+
+/* 5. Nuevos flotadores (Calavera y Calabaza izquierda) */
+.hw-float-5 {
+  top: 34%;
+  left: 14px;
+  font-size: 1.45rem;
+  opacity: 0.42;
+  animation: spookyOrbit 6.5s ease-in-out infinite 0.8s;
+}
+
+.hw-float-6 {
+  bottom: 30px;
+  left: 195px;
+  font-size: 1.55rem;
+  opacity: 0.55;
+  animation: spookyOrbit 5.2s ease-in-out infinite 2.1s;
+}
+
+@keyframes spookyOrbit {
+  0%, 100% { transform: translate(0, 0) rotate(-8deg) scale(1); }
+  25%      { transform: translate(8px, -12px) rotate(5deg) scale(1.08); }
+  50%      { transform: translate(0, -20px) rotate(10deg) scale(1.12); }
+  75%      { transform: translate(-8px, -10px) rotate(-4deg) scale(1.05); }
+}
+
+/* 6. Brasas / Luciérnagas mágicas ascendentes */
+.hw-ember {
+  position: fixed;
+  bottom: -12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f97316;
+  box-shadow: 0 0 10px #f97316, 0 0 18px #fbbf24;
+  opacity: 0;
+  pointer-events: none;
+  animation: emberRise 11s ease-in infinite;
+}
+
+.hw-ember-1 { left: 12%; animation-duration: 9s; animation-delay: 0s; }
+.hw-ember-2 { left: 28%; background: #a855f7; box-shadow: 0 0 10px #a855f7, 0 0 18px #c084fc; animation-duration: 12s; animation-delay: 2s; }
+.hw-ember-3 { left: 48%; animation-duration: 10s; animation-delay: 4s; }
+.hw-ember-4 { left: 66%; background: #a855f7; box-shadow: 0 0 10px #a855f7, 0 0 18px #c084fc; animation-duration: 13s; animation-delay: 1s; }
+.hw-ember-5 { left: 81%; animation-duration: 9.5s; animation-delay: 3.5s; }
+.hw-ember-6 { left: 92%; background: #22c55e; box-shadow: 0 0 10px #22c55e; animation-duration: 11.5s; animation-delay: 5s; }
+
+@keyframes emberRise {
+  0%   { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; }
+  15%  { opacity: 0.85; }
+  50%  { transform: translateY(-45vh) translateX(22px) scale(1.1); opacity: 0.7; }
+  85%  { opacity: 0.4; }
+  100% { transform: translateY(-92vh) translateX(-18px) scale(0.3); opacity: 0; }
+}
+
+/* 7. Hojas de otoño cayendo y girando */
+.hw-falling-leaf {
+  position: fixed;
+  top: -30px;
+  font-size: 1.2rem;
+  opacity: 0;
+  filter: none !important;
+  background: transparent !important;
+  pointer-events: none;
+  animation: autumnLeafFall 15s linear infinite;
+}
+
+.hw-leaf-1 { left: 18%; animation-duration: 14s; animation-delay: 1s; }
+.hw-leaf-2 { left: 54%; animation-duration: 17s; animation-delay: 6s; }
+.hw-leaf-3 { left: 84%; animation-duration: 15s; animation-delay: 10s; }
+
+@keyframes autumnLeafFall {
+  0%   { transform: translate(0, -20px) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.65; }
+  35%  { transform: translate(35px, 32vh) rotate(120deg); }
+  70%  { transform: translate(-25px, 68vh) rotate(240deg); opacity: 0.55; }
+  100% { transform: translate(20px, 104vh) rotate(360deg); opacity: 0; }
+}
+
+/* 8. Ojos misteriosos que parpadean en la oscuridad */
+.hw-creepy-eyes {
+  position: fixed;
+  font-size: 1.15rem;
+  opacity: 0;
+  filter: none !important;
+  background: transparent !important;
+  pointer-events: none;
+  animation: creepyEyesBlink 8s ease-in-out infinite;
+}
+
+.hw-eyes-1 { bottom: 165px; left: 16px; animation-delay: 1.5s; }
+.hw-eyes-2 { top: 68%; right: 16px; animation-delay: 5.2s; }
+
+@keyframes creepyEyesBlink {
+  0%, 70%, 100% { opacity: 0; transform: scale(0.8); }
+  75%, 83%      { opacity: 0.65; transform: scale(1); }
+  85%           { opacity: 0.05; transform: scaleY(0.1); }
+  87%, 94%      { opacity: 0.65; transform: scale(1.05); }
+}
+
+/* 9. Rastro mágico del cursor en Modo Halloween */
+.hw-cursor-spark {
+  position: fixed;
+  font-size: 0.92rem;
+  pointer-events: none;
+  z-index: 9998;
+  filter: none !important;
+  background: transparent !important;
+  animation: cursorSparkFade 0.72s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes cursorSparkFade {
+  0%   { opacity: 0.9; transform: translate(-50%, -50%) scale(0.7) rotate(0deg); }
+  100% { opacity: 0; transform: translate(-50%, -34px) scale(1.25) rotate(24deg); }
+}
+
+/* 10. Flujo de luz animado en los bordes superiores de paneles en Modo Halloween */
+@keyframes hwGradientFlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+html[data-theme="halloween"] .panel::after {
+  background: linear-gradient(90deg, #7e22ce, #f97316, #22c55e, #fbbf24, #f97316, #7e22ce);
+  background-size: 250% 100%;
+  animation: hwGradientFlow 4.5s linear infinite;
+}
+
+
 
 
 
