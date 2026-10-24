@@ -4012,27 +4012,54 @@ html[data-theme="halloween"] .halloween-stage,
   50%      { transform: translateY(22px); }
 }
 
-/* 3. Bruja voladora en escoba cruzando frente a la luna */
+/* 3. Bruja pixel art voladora (GIF animado con estela de chispas) */
 .hw-witch-flyer {
   position: fixed;
-  top: 118px;
-  right: -70px;
-  font-size: 1.85rem;
-  opacity: 0.82;
-  filter: none !important;
-  background: transparent !important;
+  top: 105px;
+  left: -140px;
+  width: 112px;
   pointer-events: none;
-  animation: witchMoonFlight 26s linear infinite 2s;
+  background: transparent !important;
+  filter: none !important;
+  animation: witchPixelFlight 24s linear infinite 2s;
+  will-change: transform;
 }
 
-@keyframes witchMoonFlight {
-  0%   { transform: translate(80px, 25px) scaleX(-1) rotate(5deg); opacity: 0; }
-  5%   { opacity: 0.85; }
-  25%  { transform: translate(-28vw, -18px) scaleX(-1) rotate(-6deg); }
-  50%  { transform: translate(-55vw, 14px) scaleX(-1) rotate(8deg); }
-  75%  { transform: translate(-82vw, -22px) scaleX(-1) rotate(-5deg); }
-  95%  { opacity: 0.85; }
-  100% { transform: translate(-112vw, 10px) scaleX(-1) rotate(4deg); opacity: 0; }
+.hw-witch-img {
+  display: block;
+  width: 112px;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  background: transparent !important;
+  filter: none !important;
+  user-select: none;
+  animation: witchPixelBob 1.6s ease-in-out infinite;
+}
+
+/* Vuelo de izquierda a derecha (hacia donde apunta la escoba) con ondulación */
+@keyframes witchPixelFlight {
+  0%   { transform: translate(0, 30px);          opacity: 0; }
+  4%   { opacity: 1; }
+  20%  { transform: translate(24vw, -10px); }
+  40%  { transform: translate(46vw, 40px); }
+  60%  { transform: translate(68vw, 0px); }
+  80%  { transform: translate(90vw, 45px); }
+  96%  { opacity: 1; }
+  100% { transform: translate(calc(100vw + 160px), 15px); opacity: 0; }
+}
+
+/* Balanceo suave en el aire + inclinación tipo vuelo en escoba */
+@keyframes witchPixelBob {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  25%      { transform: translateY(-7px) rotate(2deg); }
+  50%      { transform: translateY(-2px) rotate(5deg); }
+  75%      { transform: translateY(6px) rotate(-1deg); }
+}
+
+@media (max-width: 768px) {
+  .hw-witch-flyer, .hw-witch-img { width: 80px; }
 }
 
 /* 4. Murciélagos adicionales en diagonal */
