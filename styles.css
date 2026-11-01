@@ -1849,9 +1849,9 @@ input:focus, textarea:focus, select:focus {
   animation: fadeUp 0.22s cubic-bezier(0.16,1,0.3,1);
 }
 
-/* Respeta a quienes prefieren menos movimiento en la interfaz (excluyendo mascotas y Modo Halloween) */
+/* Respeta a quienes prefieren menos movimiento en la interfaz (excluyendo mascotas, Modo Halloween y Modo Navideño) */
 @media (prefers-reduced-motion: reduce) {
-  html:not([data-theme="halloween"]) *:not(.pink-mascot):not(.red-mascot):not(.purple-mascot):not(.cyan-mascot):not([class*="mascot-"]):not([class*="-walker"]):not([class*="-img"]):not([class*="-shadow"]):not([class*="-bubble"]):not([class*="hw-"]):not(.halloween-stage) {
+  html:not([data-theme="halloween"]):not([data-theme="christmas"]) *:not(.pink-mascot):not(.red-mascot):not(.purple-mascot):not(.cyan-mascot):not([class*="mascot-"]):not([class*="-walker"]):not([class*="-img"]):not([class*="-shadow"]):not([class*="-bubble"]):not([class*="hw-"]):not(.halloween-stage):not([class*="xmas-"]):not(.christmas-stage) {
     scroll-behavior: auto;
   }
 }
@@ -4217,6 +4217,525 @@ html[data-theme="halloween"] .panel::after {
   background-size: 250% 100%;
   animation: hwGradientFlow 4.5s linear infinite;
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   🎄 MODO NAVIDEÑO · PERSONALIZACIÓN FESTIVA, LUCES Y NIEVE
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Paleta de Colores Modo Navideño (Verde Pino Nevado + Rojo Santa + Oro Navideño) */
+html[data-theme="christmas"],
+[data-theme="christmas"] {
+  --bg-base:        #061d15;  /* Bosque de pinos nevado / Noche polar verde oscura */
+  --bg-surface:     #0b2a1e;  /* Superficie verde esmeralda invernal */
+  --bg-card:        #0e3426;  /* Tarjetas verdes profundas */
+  --bg-card-sub:    #072219;  /* Sub-tarjetas oscuras */
+  --bg-input:       #061a13;  /* Inputs oscuros */
+  --bg-input-hover: #123d2e;
+  --border:         #1a563f;  /* Borde verde abeto */
+  --border-focus:   #ef4444;  /* Borde activo Rojo Santa */
+  --border-limpiar: #7f1d1d;
+  --bg-limpiar:     #1a0b10;
+  --text-limpiar:   #fca5a5;
+
+  --accent:         #dc2626;  /* Rojo Santa Claus clásico */
+  --accent-hover:   #b91c1c;
+  --accent-glow:    rgba(220, 38, 38, 0.42);
+  --accent2:        #16a34a;  /* Verde Navidad */
+  --accent2-glow:   rgba(22, 163, 74, 0.35);
+  --accent3:        #124c38;
+
+  --header-bg-1:    #881337;  /* Rojo festivo terciopelo */
+  --header-bg-2:    #064e3b;  /* Verde pino noble */
+  --header-border:  #fbbf24;  /* Borde dorado */
+  --ql-bg:          #072e21;
+  --ambient-glow-1: rgba(220, 38, 38, 0.22);
+  --ambient-glow-2: rgba(22, 163, 74, 0.18);
+
+  --gold:           #fbbf24;  /* Estrella de Belén dorada */
+  --danger:         #ef4444;
+  --danger-glow:    rgba(239, 68, 68, 0.35);
+  --success:        #22c55e;
+
+  --text-primary:   #f0fdf4;  /* Blanco nieve suave */
+  --text-secondary: #bbf7d0;  /* Menta claro */
+  --text-muted:     #86efac;  /* Verde menta suave */
+  --text-accent:    #fbbf24;  /* Oro brillante */
+
+  --card-shadow:    0 10px 35px rgba(0, 0, 0, 0.65), 0 0 20px rgba(220, 38, 38, 0.15);
+}
+
+/* Botón Rápido Modo Navideño en la barra superior */
+.btn-quick-xmas {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.25), rgba(22, 163, 74, 0.28));
+  border: 1.5px solid rgba(220, 38, 38, 0.55);
+  color: #f0fdf4;
+  border-radius: 20px;
+  padding: 4px 11px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.25);
+}
+
+.btn-quick-xmas:hover {
+  transform: translateY(-2px) scale(1.04);
+  background: linear-gradient(135deg, #dc2626, #16a34a);
+  border-color: #fbbf24;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.55);
+}
+
+.btn-quick-xmas .xmas-btn-tree {
+  display: inline-block;
+  animation: xmasTreeTwinkle 2.5s ease-in-out infinite;
+}
+
+.btn-quick-xmas.is-active-xmas,
+html[data-theme="christmas"] .btn-quick-xmas {
+  background: linear-gradient(135deg, #dc2626 0%, #15803d 100%);
+  border-color: #fbbf24;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(220, 38, 38, 0.7), 0 0 28px rgba(22, 163, 74, 0.5);
+}
+
+.swatch-christmas {
+  background: linear-gradient(135deg, #dc2626 50%, #15803d 50%);
+  border: 1px solid #fbbf24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+}
+
+@keyframes xmasTreeTwinkle {
+  0%, 100% { transform: rotate(0deg) scale(1); filter: drop-shadow(0 0 3px #fbbf24); }
+  25%      { transform: rotate(-8deg) scale(1.14); filter: drop-shadow(0 0 8px #22c55e); }
+  75%      { transform: rotate(8deg) scale(1.14); filter: drop-shadow(0 0 8px #ef4444); }
+}
+
+/* ── Personalización de Encabezado, Paneles y Botones en Modo Navideño ── */
+@keyframes xmasCozyGlow {
+  0%, 100% {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65), 0 0 16px rgba(220, 38, 38, 0.22);
+  }
+  50% {
+    box-shadow: 0 10px 34px rgba(0, 0, 0, 0.7), 0 0 26px rgba(22, 163, 74, 0.38), 0 0 40px rgba(251, 191, 36, 0.2);
+  }
+}
+
+html[data-theme="christmas"] .app-header {
+  background: linear-gradient(135deg, #881337 0%, #14532d 50%, #064e3b 100%);
+  border-bottom: 2px solid #fbbf24;
+  box-shadow: 0 4px 25px rgba(220, 38, 38, 0.4);
+}
+
+html[data-theme="christmas"] .app-title::after {
+  content: ' 🎄';
+  display: inline-block;
+  animation: xmasTreeTwinkle 3s ease-in-out infinite;
+}
+
+html[data-theme="christmas"] .sidebar-title::before {
+  content: '❄️ ';
+}
+
+html[data-theme="christmas"] .panel {
+  border-color: rgba(22, 163, 74, 0.45);
+  animation: xmasCozyGlow 4.5s ease-in-out infinite;
+}
+
+@keyframes xmasGarlandFlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+html[data-theme="christmas"] .panel::after {
+  opacity: 0.92;
+  transform: scaleX(1);
+  height: 3px;
+  background: linear-gradient(90deg, #dc2626, #ffffff, #16a34a, #fbbf24, #ffffff, #dc2626);
+  background-size: 250% 100%;
+  animation: xmasGarlandFlow 4s linear infinite;
+}
+
+html[data-theme="christmas"] .panel-header {
+  background: linear-gradient(90deg, rgba(136, 19, 55, 0.75) 0%, rgba(6, 78, 59, 0.65) 100%);
+  border-bottom-color: rgba(251, 191, 36, 0.35);
+}
+
+html[data-theme="christmas"] .btn-primary,
+html[data-theme="christmas"] .btn-nueva-sot-top,
+html[data-theme="christmas"] .btn-nueva-sot-bottom,
+html[data-theme="christmas"] .btn-copy-ocr-main {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #15803d 100%);
+  border: 1.5px solid rgba(251, 191, 36, 0.6);
+  box-shadow: 0 4px 18px rgba(220, 38, 38, 0.45);
+}
+
+html[data-theme="christmas"] .sot-card-item {
+  border-color: rgba(22, 163, 74, 0.45);
+  background: linear-gradient(135deg, rgba(14, 52, 38, 0.95), rgba(10, 42, 30, 0.9));
+}
+
+html[data-theme="christmas"] .sot-card-item.active {
+  background: linear-gradient(135deg, rgba(136, 19, 55, 0.75), rgba(21, 128, 61, 0.75));
+  border-color: #fbbf24;
+  box-shadow: 0 0 18px rgba(220, 38, 38, 0.5), inset 0 0 10px rgba(251, 191, 36, 0.25);
+}
+
+html[data-theme="christmas"] .sot-card-item.active .sot-card-icon-wrap {
+  background: linear-gradient(135deg, #dc2626, #16a34a);
+  border-color: #fbbf24;
+  box-shadow: 0 0 14px rgba(220, 38, 38, 0.75);
+}
+
+html[data-theme="christmas"] .plantilla-pre {
+  border-color: rgba(22, 163, 74, 0.45);
+  box-shadow: inset 0 0 20px rgba(22, 163, 74, 0.1);
+}
+
+/* Mascota Blaziken visible en Modo Navideño como héroe festivo */
+html[data-theme="christmas"] .red-mascot,
+[data-theme="christmas"] .red-mascot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+html[data-theme="christmas"] .red-img {
+  filter: none !important;
+  background: transparent !important;
+}
+
+html[data-theme="christmas"] .red-bubble {
+  background: #0b2a1e !important;
+  color: #fef08a !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.5) !important;
+}
+
+/* ── Escenario de Animaciones Navideñas (#christmasStage) ── */
+.christmas-stage {
+  display: none;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 900;
+  overflow: hidden;
+}
+
+html[data-theme="christmas"] .christmas-stage,
+[data-theme="christmas"] .christmas-stage {
+  display: block;
+}
+
+/* 1. Guirnalda de luces navideñas parpadeantes */
+.xmas-lights-garland {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  height: 22px;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  pointer-events: none;
+  z-index: 905;
+}
+
+.xmas-light-bulb {
+  width: 10px;
+  height: 14px;
+  border-radius: 50% 50% 45% 45%;
+  position: relative;
+  animation: xmasBulbPulse 1.8s ease-in-out infinite;
+}
+
+.xmas-light-bulb::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 2px;
+  width: 6px;
+  height: 4px;
+  background: #1e293b;
+  border-radius: 2px;
+}
+
+.xmas-light-bulb.c-red {
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444, 0 0 18px rgba(239, 68, 68, 0.7);
+  animation-delay: 0s;
+}
+
+.xmas-light-bulb.c-gold {
+  background: #fbbf24;
+  box-shadow: 0 0 10px #fbbf24, 0 0 18px rgba(251, 191, 36, 0.7);
+  animation-delay: 0.35s;
+}
+
+.xmas-light-bulb.c-green {
+  background: #22c55e;
+  box-shadow: 0 0 10px #22c55e, 0 0 18px rgba(34, 197, 94, 0.7);
+  animation-delay: 0.7s;
+}
+
+.xmas-light-bulb.c-blue {
+  background: #38bdf8;
+  box-shadow: 0 0 10px #38bdf8, 0 0 18px rgba(56, 189, 248, 0.7);
+  animation-delay: 1.05s;
+}
+
+.xmas-light-bulb.c-white {
+  background: #f8fafc;
+  box-shadow: 0 0 10px #ffffff, 0 0 18px rgba(255, 255, 255, 0.85);
+  animation-delay: 1.4s;
+}
+
+@keyframes xmasBulbPulse {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+/* 2. Sistema de Nieve Continua */
+.xmas-snow-wrap {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.xmas-snow-flake {
+  position: fixed;
+  top: -30px;
+  color: #ffffff;
+  user-select: none;
+  pointer-events: none;
+  filter: none;
+  background: transparent;
+  animation: xmasSnowDrop 11s linear infinite;
+  will-change: transform;
+}
+
+@keyframes xmasSnowDrop {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(50vh) translateX(35px) rotate(180deg);
+  }
+  90% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(105vh) translateX(-25px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Distribución aleatoria y variada de copos */
+.s-1  { left: 4%;  font-size: 1.35rem; animation-duration: 9s;   animation-delay: 0s;   }
+.s-2  { left: 11%; font-size: 0.95rem; animation-duration: 13s;  animation-delay: 2s;   opacity: 0.7; }
+.s-3  { left: 17%; font-size: 0.65rem; animation-duration: 16s;  animation-delay: 5s;   opacity: 0.5; }
+.s-4  { left: 24%; font-size: 1.25rem; animation-duration: 10s;  animation-delay: 1.5s; }
+.s-5  { left: 31%; font-size: 0.85rem; animation-duration: 14s;  animation-delay: 4s;   opacity: 0.75; }
+.s-6  { left: 38%; font-size: 0.6rem;  animation-duration: 18s;  animation-delay: 7s;   opacity: 0.45; }
+.s-7  { left: 45%; font-size: 1.45rem; animation-duration: 9.5s; animation-delay: 3s;   }
+.s-8  { left: 52%; font-size: 0.9rem;  animation-duration: 12.5s;animation-delay: 0.5s; opacity: 0.7; }
+.s-9  { left: 58%; font-size: 0.65rem; animation-duration: 15s;  animation-delay: 6s;   opacity: 0.5; }
+.s-10 { left: 65%; font-size: 1.2rem;  animation-duration: 10.5s;animation-delay: 2.5s; }
+.s-11 { left: 72%; font-size: 0.8rem;  animation-duration: 13.5s;animation-delay: 5.5s; opacity: 0.65; }
+.s-12 { left: 78%; font-size: 0.55rem; animation-duration: 17s;  animation-delay: 1s;   opacity: 0.4; }
+.s-13 { left: 84%; font-size: 1.4rem;  animation-duration: 9.8s; animation-delay: 4.5s; }
+.s-14 { left: 90%; font-size: 0.95rem; animation-duration: 12s;  animation-delay: 3.5s; opacity: 0.7; }
+.s-15 { left: 95%; font-size: 0.6rem;  animation-duration: 16.5s;animation-delay: 8s;   opacity: 0.45; }
+.s-16 { left: 20%; font-size: 1.15rem; animation-duration: 11.5s;animation-delay: 6.5s; }
+.s-17 { left: 60%; font-size: 1.3rem;  animation-duration: 10.8s;animation-delay: 7.5s; }
+.s-18 { left: 80%; font-size: 0.75rem; animation-duration: 14.5s;animation-delay: 9s;   opacity: 0.6; }
+
+/* 3. Trineo de Santa Volando con Renos */
+.xmas-sleigh-flyer {
+  position: fixed;
+  top: 90px;
+  left: -220px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 1.8rem;
+  pointer-events: none;
+  animation: xmasSleighFlight 26s linear infinite 3s;
+  z-index: 902;
+  will-change: transform;
+}
+
+.xmas-reindeer {
+  display: inline-block;
+  animation: xmasReindeerGallop 0.65s ease-in-out infinite alternate;
+}
+
+.xmas-sleigh {
+  display: inline-block;
+}
+
+.xmas-stardust {
+  font-size: 1.1rem;
+  color: #fbbf24;
+  animation: xmasStarTwinkle 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes xmasReindeerGallop {
+  0%   { transform: translateY(0) rotate(-6deg); }
+  100% { transform: translateY(-7px) rotate(6deg); }
+}
+
+@keyframes xmasSleighFlight {
+  0%   { transform: translate(0, 35px); opacity: 0; }
+  5%   { opacity: 0.95; }
+  25%  { transform: translate(28vw, -12px); }
+  50%  { transform: translate(55vw, 25px); }
+  75%  { transform: translate(82vw, -16px); }
+  95%  { opacity: 0.95; }
+  100% { transform: translate(calc(100vw + 260px), 15px); opacity: 0; }
+}
+
+/* 4. Árbol de Navidad decorado en la esquina */
+.xmas-tree-corner {
+  position: fixed;
+  bottom: 12px;
+  right: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 903;
+  pointer-events: none;
+}
+
+.xmas-tree-star {
+  font-size: 1.25rem;
+  margin-bottom: -8px;
+  animation: xmasStarTwinkle 1.8s ease-in-out infinite;
+  z-index: 2;
+}
+
+.xmas-tree-body {
+  font-size: 2.6rem;
+  filter: none;
+  animation: xmasTreeSway 3.5s ease-in-out infinite;
+}
+
+.xmas-gifts-pile {
+  font-size: 1.2rem;
+  margin-top: -6px;
+  display: flex;
+  gap: 2px;
+}
+
+@keyframes xmasStarTwinkle {
+  0%, 100% {
+    transform: scale(0.9) rotate(0deg);
+    filter: drop-shadow(0 0 4px #fbbf24);
+  }
+  50% {
+    transform: scale(1.22) rotate(15deg);
+    filter: drop-shadow(0 0 12px #fbbf24) drop-shadow(0 0 20px #f59e0b);
+  }
+}
+
+@keyframes xmasTreeSway {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(2deg) translateY(-2px); }
+}
+
+/* 5. Muñeco de Nieve en la esquina inferior izquierda */
+.xmas-snowman-corner {
+  position: fixed;
+  bottom: 16px;
+  left: 110px;
+  font-size: 2.1rem;
+  z-index: 902;
+  pointer-events: none;
+  animation: xmasSnowmanBounce 4.5s ease-in-out infinite;
+}
+
+@keyframes xmasSnowmanBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  45%      { transform: translateY(-8px) rotate(-6deg); }
+  55%      { transform: translateY(-8px) rotate(6deg); }
+}
+
+/* 6. Campanas navideñas y moño festivo */
+.xmas-corner-bells {
+  position: fixed;
+  top: 60px;
+  left: 12px;
+  font-size: 1.6rem;
+  pointer-events: none;
+  z-index: 904;
+  animation: xmasBellsJingle 3s ease-in-out infinite;
+}
+
+.xmas-corner-wreath {
+  position: fixed;
+  top: 60px;
+  right: 14px;
+  font-size: 1.55rem;
+  pointer-events: none;
+  z-index: 904;
+}
+
+@keyframes xmasBellsJingle {
+  0%, 100% { transform: rotate(0deg); }
+  15%, 45% { transform: rotate(14deg); }
+  30%, 60% { transform: rotate(-14deg); }
+  75%      { transform: rotate(0deg); }
+}
+
+/* 7. Chispas mágicas de cursor y ráfaga al activar Navidad */
+.xmas-cursor-spark {
+  position: fixed;
+  font-size: 0.95rem;
+  pointer-events: none;
+  z-index: 9998;
+  filter: none !important;
+  background: transparent !important;
+  animation: xmasSparkFade 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.xmas-burst-spark {
+  position: fixed;
+  font-size: 1.25rem;
+  pointer-events: none;
+  z-index: 9999;
+  filter: none !important;
+  background: transparent !important;
+  animation: xmasBurstFly 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes xmasSparkFade {
+  0%   { opacity: 0.95; transform: translate(-50%, -50%) scale(0.7) rotate(0deg); }
+  100% { opacity: 0;    transform: translate(-50%, -32px) scale(1.2) rotate(25deg); }
+}
+
+@keyframes xmasBurstFly {
+  0%   { opacity: 1; transform: translate(0, 0) scale(0.6); }
+  100% { opacity: 0; transform: translate(var(--tx, 40px), var(--ty, -50px)) scale(1.3) rotate(35deg); }
+}
+
 
 
 

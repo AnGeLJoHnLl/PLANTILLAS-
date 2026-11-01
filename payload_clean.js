@@ -666,7 +666,7 @@ function toggleThemeMenu(event) {
 function updateThemeMenuUI(themeName) {
   const currentTheme = themeName || document.documentElement.getAttribute('data-theme') || 'purple';
   const themes = [
-    'halloween',
+    'christmas', 'halloween',
     'pink', 'purple-light', 'red-light', 'cyan-light',
     'pink-dark', 'purple-dark', 'red-dark', 'cyan-dark', 'purple'
   ];
@@ -680,16 +680,23 @@ function updateThemeMenuUI(themeName) {
   if (btnHw) {
     btnHw.classList.toggle('is-active-hw', currentTheme === 'halloween');
   }
+  const btnXmas = g('btnQuickXmas');
+  if (btnXmas) {
+    btnXmas.classList.toggle('is-active-xmas', currentTheme === 'christmas');
+  }
 }
 
 function spawnHalloweenSparks(originEl) {
-  if (document.documentElement.getAttribute('data-theme') !== 'halloween') return;
+  const theme = document.documentElement.getAttribute('data-theme');
+  if (theme !== 'halloween' && theme !== 'christmas') return;
   const el = originEl || g('btnCopy') || document.body;
   const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 40 };
-  const emojis = ['🎃', '🦇', '👻', '🍬', '🕸️', '✨'];
+  const hwEmojis = ['🎃', '🦇', '👻', '🍬', '🕸️', '✨'];
+  const xmasEmojis = ['❄️', '🎁', '🎄', '⭐', '🔔', '✨', '❅'];
+  const emojis = theme === 'christmas' ? xmasEmojis : hwEmojis;
   for (let i = 0; i < 6; i++) {
     const p = document.createElement('div');
-    p.className = 'mascot-ghost-particle';
+    p.className = theme === 'christmas' ? 'xmas-burst-spark' : 'mascot-ghost-particle';
     p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
     const tx = (Math.random() - 0.5) * 110;
     p.style.setProperty('--tx', `${tx}px`);

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" id="appFavicon" />
-  <link rel="stylesheet" href="styles.css?v=20261024_pixel_witch" />
+  <link rel="stylesheet" href="styles.css?v=20261101_navidad_mode" />
   <!-- FontAwesome & Cropper.js for OCR -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
@@ -24,7 +24,8 @@
       'cyan-light':   { c1: '#0284c7', c2: '#0369a1', c3: '#06b6d4' },
       'cyan-dark':    { c1: '#06b6d4', c2: '#0891b2', c3: '#22d3ee' },
       'purple':       { c1: '#4f46e5', c2: '#7c3aed', c3: '#06b6d4' },
-      'halloween':    { c1: '#f97316', c2: '#7e22ce', c3: '#22c55e' }
+      'halloween':    { c1: '#f97316', c2: '#7e22ce', c3: '#22c55e' },
+      'christmas':    { c1: '#dc2626', c2: '#16a34a', c3: '#fbbf24' }
     };
 
     function updateFaviconTheme(themeName) {
@@ -46,7 +47,7 @@
       } else if (theme.startsWith('purple')) {
         img.src = 'gengar-lock.gif';
         img.alt = 'Gengar';
-      } else if (theme.startsWith('red')) {
+      } else if (theme.startsWith('red') || theme === 'christmas') {
         img.src = 'blaziken.png';
         img.alt = 'Blaziken';
       } else if (theme.startsWith('cyan')) {
@@ -123,9 +124,64 @@
       } catch (e) {}
     }
 
+    let _xmasAudio = null;
+    function playChristmasJingle() {
+      try {
+        if (!_xmasAudio) {
+          _xmasAudio = new Audio('christmas-chime.wav');
+          _xmasAudio.volume = 0.85;
+        }
+        _xmasAudio.currentTime = 0;
+        const p = _xmasAudio.play();
+        if (p && typeof p.catch === 'function') {
+          p.catch(() => playSynthChristmasBellsFallback());
+        }
+      } catch (err) {
+        playSynthChristmasBellsFallback();
+      }
+    }
+
+    function playSynthChristmasBellsFallback() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const notes = [
+          { f: 659.25, d: 0.18, p: 0.05 },
+          { f: 659.25, d: 0.18, p: 0.05 },
+          { f: 659.25, d: 0.36, p: 0.10 },
+          { f: 659.25, d: 0.18, p: 0.05 },
+          { f: 659.25, d: 0.18, p: 0.05 },
+          { f: 659.25, d: 0.36, p: 0.10 },
+          { f: 659.25, d: 0.18, p: 0.04 },
+          { f: 783.99, d: 0.18, p: 0.04 },
+          { f: 523.25, d: 0.18, p: 0.04 },
+          { f: 587.33, d: 0.18, p: 0.04 },
+          { f: 659.25, d: 0.60, p: 0.20 },
+        ];
+        let curTime = ctx.currentTime + 0.02;
+        notes.forEach(n => {
+          [1, 2.76, 5.4].forEach((harm, hIdx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(n.f * harm, curTime);
+            const amp = (hIdx === 0 ? 0.32 : (hIdx === 1 ? 0.16 : 0.07));
+            gain.gain.setValueAtTime(amp, curTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, curTime + n.d + 0.45);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(curTime);
+            osc.stop(curTime + n.d + 0.5);
+          });
+          curTime += n.d + n.p;
+        });
+      } catch (e) {}
+    }
+
     function setAppTheme(themeName) {
       const current = document.documentElement.getAttribute('data-theme');
-      if (current && current !== 'halloween') {
+      if (current && current !== 'halloween' && current !== 'christmas') {
         localStorage.setItem('hitss_prev_theme', current);
       }
       document.documentElement.setAttribute('data-theme', themeName);
@@ -139,11 +195,22 @@
       if (btnHw) {
         btnHw.classList.toggle('is-active-hw', themeName === 'halloween');
       }
+      const btnXmas = document.getElementById('btnQuickXmas');
+      if (btnXmas) {
+        btnXmas.classList.toggle('is-active-xmas', themeName === 'christmas');
+      }
       if (themeName === 'halloween' && current !== 'halloween') {
         playHalloweenScream();
         triggerHalloweenLightning();
         setTimeout(() => {
           if (typeof gengarSpookyJump === 'function') gengarSpookyJump();
+        }, 120);
+      }
+      if (themeName === 'christmas' && current !== 'christmas') {
+        playChristmasJingle();
+        triggerChristmasSnowBurst();
+        setTimeout(() => {
+          if (typeof blazikenActionJump === 'function') blazikenActionJump();
         }, 120);
       }
       const menu = document.getElementById('themeDropdownMenu');
@@ -159,19 +226,40 @@
       setTimeout(() => flash.classList.remove('is-flashing'), 1100);
     }
 
-    // Rastro mágico del cursor y chispas al hacer clic en Modo Halloween
-    (function initHalloweenInteractiveFX() {
+    function triggerChristmasSnowBurst() {
+      const stage = document.getElementById('christmasStage');
+      if (!stage) return;
+      const icons = ['❄️', '⭐', '🎄', '🎁', '🔔', '✨', '❅'];
+      for (let i = 0; i < 18; i++) {
+        const p = document.createElement('span');
+        p.className = 'xmas-burst-spark';
+        p.textContent = icons[Math.floor(Math.random() * icons.length)];
+        p.style.left = (Math.random() * 95) + 'vw';
+        p.style.top = (10 + Math.random() * 40) + 'vh';
+        p.style.setProperty('--tx', `${(Math.random() - 0.5) * 120}px`);
+        p.style.setProperty('--ty', `${(Math.random() - 0.5) * 100}px`);
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 1200);
+      }
+    }
+
+    // Rastro mágico del cursor y chispas al hacer clic en Modo Halloween y Modo Navideño
+    (function initHolidayInteractiveFX() {
       let lastTrailTime = 0;
-      const trailIcons = ['✨', '🎃', '🦇', '👻', '🕸️', '🍬', '🍂'];
+      const hwIcons = ['✨', '🎃', '🦇', '👻', '🕸️', '🍬', '🍂'];
+      const xmasIcons = ['❄️', '✨', '⭐', '🎄', '🎁', '🔔', '⛄', '❅'];
       document.addEventListener('mousemove', function(e) {
-        if (document.documentElement.getAttribute('data-theme') !== 'halloween') return;
+        const theme = document.documentElement.getAttribute('data-theme');
+        if (theme !== 'halloween' && theme !== 'christmas') return;
         const now = performance.now();
-        if (now - lastTrailTime < 110) return;
+        if (now - lastTrailTime < 95) return;
         lastTrailTime = now;
 
+        const isXmas = theme === 'christmas';
+        const icons = isXmas ? xmasIcons : hwIcons;
         const spark = document.createElement('span');
-        spark.className = 'hw-cursor-spark';
-        spark.textContent = trailIcons[Math.floor(Math.random() * trailIcons.length)];
+        spark.className = isXmas ? 'xmas-cursor-spark' : 'hw-cursor-spark';
+        spark.textContent = icons[Math.floor(Math.random() * icons.length)];
         spark.style.left = (e.clientX + (Math.random() - 0.5) * 14) + 'px';
         spark.style.top = (e.clientY + (Math.random() - 0.5) * 14) + 'px';
         document.body.appendChild(spark);
@@ -186,6 +274,16 @@
         setAppTheme(prev === 'halloween' ? 'purple' : prev);
       } else {
         setAppTheme('halloween');
+      }
+    }
+
+    function toggleChristmasMode() {
+      const current = document.documentElement.getAttribute('data-theme') || 'purple';
+      if (current === 'christmas') {
+        const prev = localStorage.getItem('hitss_prev_theme') || 'purple';
+        setAppTheme(prev === 'christmas' ? 'purple' : prev);
+      } else {
+        setAppTheme('christmas');
       }
     }
 
@@ -227,9 +325,12 @@
       mascot.classList.add('is-action');
       setTimeout(() => mascot.classList.remove('is-action'), 700);
 
+      const isXmas = document.documentElement.getAttribute('data-theme') === 'christmas';
       const bubble = document.getElementById('redMascotBubble');
       if (bubble) {
-        const msgs = ['¡A toda máquina! 🔥', '¡Fuego en el turno! ⚡', '¡Con todo el power! 💥', '¡Imparable! 🥊', '¡Blaziken! ⚔️'];
+        const msgs = isXmas
+          ? ['¡Jo, jo, jo! ¡Feliz Navidad! 🎄', '¡Fuego navideño y muchas bendiciones! 🎁', '¡Noche de paz y full plantillas! ⭐', '¡A festejar con todo! 🔔', '¡Felices Fiestas! ❄️']
+          : ['¡A toda máquina! 🔥', '¡Fuego en el turno! ⚡', '¡Con todo el power! 💥', '¡Imparable! 🥊', '¡Blaziken! ⚔️'];
         bubble.textContent = msgs[Math.floor(Math.random() * msgs.length)];
         bubble.style.opacity = '1';
         bubble.style.transform = 'translateX(-50%) translateY(0) scale(1)';
@@ -240,10 +341,11 @@
       }
 
       const rect = mascot.getBoundingClientRect();
+      const icons = isXmas ? ['🎁', '🎄', '⭐', '❄️', '🔔', '✨'] : ['🔥', '⚡', '💥', '✨'];
       for (let i = 0; i < 4; i++) {
         const flame = document.createElement('div');
         flame.className = 'mascot-flame-particle';
-        flame.textContent = ['🔥', '⚡', '💥', '✨'][Math.floor(Math.random() * 4)];
+        flame.textContent = icons[Math.floor(Math.random() * icons.length)];
         const tx = (Math.random() - 0.5) * 60;
         flame.style.setProperty('--tx', `${tx}px`);
         flame.style.left = `${rect.left + rect.width / 2 - 10 + (i - 1.5) * 12}px`;
@@ -482,11 +584,15 @@
       </a>
     </div>
 
-    <!-- Botón Rápido Modo Halloween & Selector de Temas -->
+    <!-- Botones Rápidos Modos Especiales (Halloween & Navidad) & Selector de Temas -->
     <div class="theme-dropdown-wrap" style="display:flex; align-items:center; gap:0.45rem;">
       <button type="button" class="btn-quick-halloween" id="btnQuickHalloween" onclick="toggleHalloweenMode()" title="Activar / Desactivar Modo Halloween 🎃">
         <span class="hw-btn-pumpkin">🎃</span>
         <span class="hw-btn-label">Halloween</span>
+      </button>
+      <button type="button" class="btn-quick-xmas" id="btnQuickXmas" onclick="toggleChristmasMode()" title="Activar / Desactivar Modo Navideño 🎄">
+        <span class="xmas-btn-tree">🎄</span>
+        <span class="xmas-btn-label">Navidad</span>
       </button>
       <button type="button" class="btn-theme-dropdown" id="btnThemeDropdown" onclick="toggleThemeMenu(event)" title="Cambiar tema de color">
         <span class="theme-btn-icon">🎨</span>
@@ -496,7 +602,12 @@
       <div id="themeDropdownMenu" class="theme-dropdown-menu hidden">
         <div class="theme-menu-title">TEMAS DE INTERFAZ</div>
         <div class="theme-options-list">
-          <div class="theme-section-label">🎃 Especial</div>
+          <div class="theme-section-label">🌟 Festivos & Especiales</div>
+          <button type="button" class="theme-opt-btn theme-opt-xmas" onclick="setAppTheme('christmas')">
+            <span class="theme-swatch swatch-christmas">🎄</span>
+            <span class="theme-opt-name">Modo Navideño</span>
+            <span class="theme-active-tag" id="badge-christmas">Activo</span>
+          </button>
           <button type="button" class="theme-opt-btn theme-opt-halloween" onclick="setAppTheme('halloween')">
             <span class="theme-swatch swatch-halloween">🎃</span>
             <span class="theme-opt-name">Modo Halloween</span>
@@ -1153,8 +1264,78 @@
     <div class="hw-eerie-mist"></div>
   </div>
 
+  <!-- ═══ ESCENARIO ANIMADO EXCLUSIVO MODO NAVIDEÑO ═══ -->
+  <div class="christmas-stage" id="christmasStage" aria-hidden="true">
+    <!-- Guirnalda de luces navideñas parpadeantes en la parte superior -->
+    <div class="xmas-lights-garland">
+      <div class="xmas-light-bulb c-red"></div>
+      <div class="xmas-light-bulb c-gold"></div>
+      <div class="xmas-light-bulb c-green"></div>
+      <div class="xmas-light-bulb c-blue"></div>
+      <div class="xmas-light-bulb c-white"></div>
+      <div class="xmas-light-bulb c-red"></div>
+      <div class="xmas-light-bulb c-green"></div>
+      <div class="xmas-light-bulb c-gold"></div>
+      <div class="xmas-light-bulb c-blue"></div>
+      <div class="xmas-light-bulb c-red"></div>
+      <div class="xmas-light-bulb c-green"></div>
+      <div class="xmas-light-bulb c-white"></div>
+      <div class="xmas-light-bulb c-gold"></div>
+      <div class="xmas-light-bulb c-red"></div>
+      <div class="xmas-light-bulb c-green"></div>
+    </div>
+
+    <!-- Nieve cayendo en múltiples capas -->
+    <div class="xmas-snow-wrap">
+      <div class="xmas-snow-flake s-1">❄</div>
+      <div class="xmas-snow-flake s-2">❅</div>
+      <div class="xmas-snow-flake s-3">•</div>
+      <div class="xmas-snow-flake s-4">❄</div>
+      <div class="xmas-snow-flake s-5">❅</div>
+      <div class="xmas-snow-flake s-6">•</div>
+      <div class="xmas-snow-flake s-7">❄</div>
+      <div class="xmas-snow-flake s-8">❅</div>
+      <div class="xmas-snow-flake s-9">•</div>
+      <div class="xmas-snow-flake s-10">❄</div>
+      <div class="xmas-snow-flake s-11">❅</div>
+      <div class="xmas-snow-flake s-12">•</div>
+      <div class="xmas-snow-flake s-13">❄</div>
+      <div class="xmas-snow-flake s-14">❅</div>
+      <div class="xmas-snow-flake s-15">•</div>
+      <div class="xmas-snow-flake s-16">❄</div>
+      <div class="xmas-snow-flake s-17">❅</div>
+      <div class="xmas-snow-flake s-18">•</div>
+    </div>
+
+    <!-- Trineo de Santa volando por el cielo nocturno con renos -->
+    <div class="xmas-sleigh-flyer">
+      <span class="xmas-reindeer">🦌</span>
+      <span class="xmas-reindeer">🦌</span>
+      <span class="xmas-sleigh">🛷🎅</span>
+      <span class="xmas-stardust">✨</span>
+    </div>
+
+    <!-- Árbol de Navidad decorado en la esquina con estrella brillante -->
+    <div class="xmas-tree-corner">
+      <div class="xmas-tree-star">⭐</div>
+      <div class="xmas-tree-body">🎄</div>
+      <div class="xmas-gifts-pile">🎁🎁</div>
+    </div>
+
+    <!-- Muñeco de nieve simpático saludando en la esquina inferior -->
+    <div class="xmas-snowman-corner">
+      <span class="xmas-snowman-body">⛄</span>
+    </div>
+
+    <!-- Campanas navideñas decorativas en la esquina superior -->
+    <div class="xmas-corner-bells">🔔</div>
+
+    <!-- Corona navideña festiva en la esquina derecha -->
+    <div class="xmas-corner-wreath">🎀</div>
+  </div>
+
   <!-- Scripts -->
-  <script src="app.js?v=20261024_halloween_ultra_anim"></script>
+  <script src="app.js?v=20261101_navidad_mode"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="ocr-extension.js?v=20260927_clean_hidden_key"></script>
 </body>
