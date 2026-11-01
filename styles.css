@@ -4568,49 +4568,83 @@ html[data-theme="christmas"] .christmas-stage,
 .s-17 { left: 60%; font-size: 1.3rem;  animation-duration: 10.8s;animation-delay: 7.5s; }
 .s-18 { left: 80%; font-size: 0.75rem; animation-duration: 14.5s;animation-delay: 9s;   opacity: 0.6; }
 
-/* 3. Trineo de Santa Volando con Renos */
+/* 3. Trineo de Santa Volando con Renos Pixel Art */
 .xmas-sleigh-flyer {
   position: fixed;
-  top: 90px;
-  left: -220px;
+  top: 85px;
+  left: -380px;
   display: flex;
   align-items: center;
-  gap: 2px;
-  font-size: 1.8rem;
-  pointer-events: none;
-  animation: xmasSleighFlight 26s linear infinite 3s;
+  pointer-events: auto;
+  cursor: pointer;
+  animation: xmasSleighFlight 24s linear infinite 2.5s;
   z-index: 902;
   will-change: transform;
 }
 
-.xmas-reindeer {
-  display: inline-block;
-  animation: xmasReindeerGallop 0.65s ease-in-out infinite alternate;
+.xmas-sleigh-squad {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  animation: xmasSquadGallop 1.35s ease-in-out infinite alternate;
 }
 
-.xmas-sleigh {
-  display: inline-block;
+.xmas-santa-img {
+  width: 290px;
+  max-width: 80vw;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 4px 12px rgba(251, 191, 36, 0.35)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  user-select: none;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.22s ease;
+}
+
+.xmas-santa-img:hover {
+  filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.85)) drop-shadow(0 0 24px rgba(239, 68, 68, 0.55));
+  transform: scale(1.06);
+}
+
+.xmas-sleigh-flyer.santa-boosted .xmas-santa-img {
+  transform: scale(1.15) rotate(-3deg);
+  filter: drop-shadow(0 0 25px rgba(251, 191, 36, 0.95)) drop-shadow(0 0 35px rgba(239, 68, 68, 0.7));
 }
 
 .xmas-stardust {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: #fbbf24;
   animation: xmasStarTwinkle 0.8s ease-in-out infinite alternate;
+  pointer-events: none;
+  user-select: none;
 }
 
-@keyframes xmasReindeerGallop {
-  0%   { transform: translateY(0) rotate(-6deg); }
-  100% { transform: translateY(-7px) rotate(6deg); }
+.xmas-stardust-trail {
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.9);
+}
+
+.xmas-stardust-lead {
+  font-size: 1.35rem;
+  color: #fde047;
+  animation-delay: 0.35s;
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.95);
+}
+
+@keyframes xmasSquadGallop {
+  0%   { transform: translateY(0) rotate(-2.2deg); }
+  50%  { transform: translateY(-7px) rotate(1.8deg); }
+  100% { transform: translateY(0) rotate(-2.2deg); }
 }
 
 @keyframes xmasSleighFlight {
-  0%   { transform: translate(0, 35px); opacity: 0; }
-  5%   { opacity: 0.95; }
-  25%  { transform: translate(28vw, -12px); }
-  50%  { transform: translate(55vw, 25px); }
-  75%  { transform: translate(82vw, -16px); }
-  95%  { opacity: 0.95; }
-  100% { transform: translate(calc(100vw + 260px), 15px); opacity: 0; }
+  0%   { transform: translate(0, 32px); opacity: 0; }
+  4%   { opacity: 0.98; }
+  25%  { transform: translate(28vw, -15px); }
+  50%  { transform: translate(55vw, 24px); }
+  75%  { transform: translate(82vw, -18px); }
+  96%  { opacity: 0.98; }
+  100% { transform: translate(calc(100vw + 420px), 15px); opacity: 0; }
 }
 
 /* 4. Árbol de Navidad decorado en la esquina */
